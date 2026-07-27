@@ -1,0 +1,6 @@
+{
+  "name": "Agri-Report Generator",
+  "description": "Agronomic field inspection report generator with flexible editable forms, field photo capture, dynamic tables, and professional PDF export.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

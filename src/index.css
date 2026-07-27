@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #F7F6F2;
+    color: #3D3D3D;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Newsreader', Georgia, serif;
+  }
+}
+
+/* Custom Natural Tone Color Utilities */
+.bg-natural-canvas { background-color: #F7F6F2; }
+.bg-natural-card { background-color: #FFFFFF; }
+.bg-natural-sage-dark { background-color: #344E41; }
+.bg-natural-sage { background-color: #5A6352; }
+.bg-natural-sage-accent { background-color: #A3B18A; }
+.bg-natural-olive { background-color: #CCD5AE; }
+.bg-natural-pale { background-color: #E9EDC9; }
+.bg-natural-terracotta { background-color: #D4A373; }
+.bg-natural-input { background-color: #F9F8F5; }
+
+.text-natural-dark { color: #344E41; }
+.text-natural-sage { color: #5A6352; }
+.text-natural-accent { color: #A3B18A; }
+.text-natural-muted { color: #8C8F85; }
+
+.border-natural { border-color: #EBE9E1; }
+.border-natural-accent { border-color: #CCD5AE; }
+
+/* Dedicated Print Stylesheet */
+@media print {
+  .no-print,
+  nav,
+  header.no-print,
+  button,
+  .animate-bounce {
+    display: none !important;
+  }
+
+  body,
+  html,
+  #root,
+  main {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  #print-report-container {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
