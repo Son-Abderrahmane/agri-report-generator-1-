@@ -11,7 +11,8 @@ import {
   FileCheck2,
   RefreshCw,
   Wifi,
-  WifiOff
+  WifiOff,
+  LogOut
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -25,6 +26,7 @@ interface NavbarProps {
   onExportPDF: () => void;
   isSaving?: boolean;
   isOnline?: boolean;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -38,6 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onExportPDF,
   isSaving = false,
   isOnline = true,
+  onLogout,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#5A6352] text-white shadow-md border-b border-[#344E41]/30">
@@ -175,6 +178,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Nouveau</span>
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={onLogout}
+              className="flex items-center space-x-1 bg-red-500/20 hover:bg-red-500/30 text-red-100 text-xs px-2 py-1.5 rounded-lg border border-red-500/20 transition-all ml-2"
+              title="Se déconnecter"
+            >
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

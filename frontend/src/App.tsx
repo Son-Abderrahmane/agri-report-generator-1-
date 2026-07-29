@@ -14,10 +14,23 @@ import { FooterSignoffEditor } from './components/FooterSignoffEditor';
 import { ReportPDFView } from './components/ReportPDFView';
 import { ReportsList } from './components/ReportsList';
 import { TemplateSelector } from './components/TemplateSelector';
+import { Login } from './components/Login';
 import { CheckCircle, AlertCircle, Save, FileText, Download } from 'lucide-react';
 
 // @ts-ignore
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+let API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+  try {
+    const raw = String(import.meta.env.VITE_API_URL || '');
+    if (raw && raw.startsWith('http://')) {
+      const httpsUrl = raw.replace(/^http:\/\//i, 'https://');
+      console.warn('Frontend running on HTTPS - rewriting API URL to HTTPS to avoid mixed-content', raw, '->', httpsUrl);
+      API_BASE = httpsUrl;
+    }
+  } catch (e) {
+    // fall back to provided value
+  }
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'list' | 'templates'>('editor');
@@ -26,6 +39,7 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+  const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem('agri_admin_token'));
 
   useEffect(() => {
     const handleOnline = () => {
@@ -68,9 +82,12 @@ export default function App() {
         const reportToSync = localReports.find(r => r.id === id);
         if (reportToSync) {
           try {
-            await fetch(`${API_BASE}/reports/${id}`, {
+              await fetch(`${API_BASE}/reports/${id}`, {
               method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}` 
+              },
               body: JSON.stringify(reportToSync),
             });
             successCount++;
@@ -107,12 +124,23 @@ export default function App() {
 
   const fetchReports = async () => {
     try {
-      const res = await fetch(`${API_BASE}/reports`);
+      const res = await fetch(`${API_BASE}/reports`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setReportsList(data);
-          setReport(data[0]);
+        if (Array.isArray(data)) {
+          if (data.length > 0) {
+            setReportsList(data);
+            setReport(data[0]);
+          } else {
+            // Database is empty, create a fresh draft instead of loading old local storage
+            const initial = createNewReport();
+            setReportsList([initial]);
+            setReport(initial);
+          }
           return;
         }
       }
@@ -174,7 +202,10 @@ export default function App() {
     try {
       await fetch(`${API_BASE}/reports/${updatedWithTimestamp.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
         body: JSON.stringify(updatedWithTimestamp),
       });
       showToast('Rapport sauvegardé avec succès');
@@ -208,7 +239,10 @@ export default function App() {
 
   const handleDuplicateReport = async (id: string) => {
     try {
-      const res = await fetch(`${API_BASE}/reports/${id}/duplicate`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/reports/${id}/duplicate`, { 
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
       if (res.ok) {
         const dup = await res.json();
         setReportsList([dup, ...reportsList]);
@@ -241,7 +275,10 @@ export default function App() {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce rapport ?')) return;
 
     try {
-      await fetch(`${API_BASE}/reports/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE}/reports/${id}`, { 
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
     } catch (e) {
       console.warn('Delete server failed');
     }
@@ -261,6 +298,20 @@ export default function App() {
     }
     showToast('Rapport supprimé');
   };
+
+  const handleLogin = (token: string) => {
+    localStorage.setItem('agri_admin_token', token);
+    setAuthToken(token);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('agri_admin_token');
+    setAuthToken(null);
+  };
+
+  if (!authToken) {
+    return <Login onLogin={handleLogin} apiBase={API_BASE} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-[#3D3D3D] font-sans flex flex-col antialiased">
@@ -284,6 +335,7 @@ export default function App() {
         onExportPDF={() => setActiveTab('preview')}
         isSaving={isSaving}
         isOnline={isOnline}
+        onLogout={handleLogout}
       />
 
       {/* View Router */}
