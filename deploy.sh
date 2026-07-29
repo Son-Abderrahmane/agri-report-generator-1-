@@ -15,6 +15,8 @@ docker-compose up -d --build
 
 # Backend tasks
 echo "⚙️ Running backend setup..."
+# Fix permissions so www-data can write to the directory
+docker-compose exec -u root app chown -R www-data:www-data /var/www/backend
 docker-compose exec app composer install --no-dev --optimize-autoloader
 docker-compose exec app php artisan key:generate --force || true
 docker-compose exec app php artisan migrate --force
