@@ -16,12 +16,81 @@ import { ReportsList } from './components/ReportsList';
 import { TemplateSelector } from './components/TemplateSelector';
 import { CheckCircle, AlertCircle, Save, FileText, Download } from 'lucide-react';
 
+const API_BASE = 'http://127.0.0.1:8000/api';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'list' | 'templates'>('editor');
   const [report, setReport] = useState<Report>(() => createNewReport());
   const [reportsList, setReportsList] = useState<Report[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      syncOfflineReports();
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    if (navigator.onLine) {
+      syncOfflineReports();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const syncOfflineReports = async () => {
+    const queueStr = localStorage.getItem('agri_offline_queue');
+    if (!queueStr) return;
+    
+    try {
+      const queue: string[] = JSON.parse(queueStr);
+      if (queue.length === 0) return;
+
+      showToast(`Synchronisation de ${queue.length} rapport(s)...`);
+      
+      const localReportsStr = localStorage.getItem('agri_reports_v2');
+      if (!localReportsStr) return;
+      
+      const localReports: Report[] = JSON.parse(localReportsStr);
+      let successCount = 0;
+      let remainingQueue = [...queue];
+
+      for (const id of queue) {
+        const reportToSync = localReports.find(r => r.id === id);
+        if (reportToSync) {
+          try {
+            await fetch(`${API_BASE}/reports/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(reportToSync),
+            });
+            successCount++;
+            remainingQueue = remainingQueue.filter(qId => qId !== id);
+          } catch (e) {
+            console.error('Sync failed for report', id);
+          }
+        } else {
+          remainingQueue = remainingQueue.filter(qId => qId !== id);
+        }
+      }
+
+      localStorage.setItem('agri_offline_queue', JSON.stringify(remainingQueue));
+      
+      if (successCount > 0) {
+        showToast(`${successCount} rapport(s) synchronisé(s) avec succès`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Load reports from server or localStorage on mount
   useEffect(() => {
@@ -37,7 +106,7 @@ export default function App() {
 
   const fetchReports = async () => {
     try {
-      const res = await fetch('/api/reports');
+      const res = await fetch(`${API_BASE}/reports`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -88,9 +157,21 @@ export default function App() {
     setReportsList(updatedList);
     localStorage.setItem('agri_reports_v2', JSON.stringify(updatedList));
 
+    if (!isOnline) {
+      const queueStr = localStorage.getItem('agri_offline_queue');
+      const queue = queueStr ? JSON.parse(queueStr) : [];
+      if (!queue.includes(updatedWithTimestamp.id)) {
+        queue.push(updatedWithTimestamp.id);
+        localStorage.setItem('agri_offline_queue', JSON.stringify(queue));
+      }
+      showToast('Hors ligne : Rapport sauvegardé localement');
+      setIsSaving(false);
+      return;
+    }
+
     // Persist to server API
     try {
-      await fetch(`/api/reports/${updatedWithTimestamp.id}`, {
+      await fetch(`${API_BASE}/reports/${updatedWithTimestamp.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedWithTimestamp),
@@ -98,7 +179,13 @@ export default function App() {
       showToast('Rapport sauvegardé avec succès');
     } catch (err) {
       console.warn('Server save failed, report saved in browser storage');
-      showToast('Rapport sauvegardé localement');
+      const queueStr = localStorage.getItem('agri_offline_queue');
+      const queue = queueStr ? JSON.parse(queueStr) : [];
+      if (!queue.includes(updatedWithTimestamp.id)) {
+        queue.push(updatedWithTimestamp.id);
+        localStorage.setItem('agri_offline_queue', JSON.stringify(queue));
+      }
+      showToast('Serveur injoignable : Sauvegarde locale');
     } finally {
       setIsSaving(false);
     }
@@ -120,7 +207,7 @@ export default function App() {
 
   const handleDuplicateReport = async (id: string) => {
     try {
-      const res = await fetch(`/api/reports/${id}/duplicate`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/reports/${id}/duplicate`, { method: 'POST' });
       if (res.ok) {
         const dup = await res.json();
         setReportsList([dup, ...reportsList]);
@@ -153,7 +240,7 @@ export default function App() {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce rapport ?')) return;
 
     try {
-      await fetch(`/api/reports/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE}/reports/${id}`, { method: 'DELETE' });
     } catch (e) {
       console.warn('Delete server failed');
     }
@@ -195,6 +282,7 @@ export default function App() {
         onNewReport={() => setActiveTab('templates')}
         onExportPDF={() => setActiveTab('preview')}
         isSaving={isSaving}
+        isOnline={isOnline}
       />
 
       {/* View Router */}

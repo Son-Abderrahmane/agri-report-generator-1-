@@ -9,7 +9,9 @@ import {
   CheckCircle2, 
   PlusCircle,
   FileCheck2,
-  RefreshCw
+  RefreshCw,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -22,6 +24,7 @@ interface NavbarProps {
   onNewReport: () => void;
   onExportPDF: () => void;
   isSaving?: boolean;
+  isOnline?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -34,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNewReport,
   onExportPDF,
   isSaving = false,
+  isOnline = true,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#5A6352] text-white shadow-md border-b border-[#344E41]/30">
@@ -52,6 +56,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="hidden sm:inline-block bg-[#344E41] text-[#E9EDC9] text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border border-white/10">
                   v2.0 Expert
                 </span>
+                {isOnline ? (
+                  <div className="flex items-center space-x-1 bg-green-500/20 text-green-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-green-500/30" title="Connecté - Sauvegarde Automatique">
+                    <Wifi className="w-3 h-3" />
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-1 bg-red-500/20 text-red-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-red-500/30 animate-pulse" title="Hors-Ligne - Sauvegarde Locale">
+                    <WifiOff className="w-3 h-3" />
+                  </div>
+                )}
               </div>
               <p className="text-xs text-white/70 line-clamp-1 max-w-[180px] sm:max-w-xs font-medium">
                 {reportTitle || 'Rapport de Visite Technique'}
