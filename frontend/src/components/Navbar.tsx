@@ -47,8 +47,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & App Name */}
-          <div className="flex items-center space-x-3">
-            <div className="bg-[#A3B18A] p-2 rounded-xl text-[#344E41] font-black flex items-center justify-center shadow-inner">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="hidden sm:flex bg-[#A3B18A] p-2 rounded-xl text-[#344E41] font-black items-center justify-center shadow-inner">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>

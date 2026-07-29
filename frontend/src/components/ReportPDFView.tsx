@@ -234,11 +234,12 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
       </div>
 
       {/* Printable Report Document Container */}
-      <div
-        ref={reportRef}
-        id="print-report-container"
-        className="bg-white text-[#3D3D3D] p-6 sm:p-10 shadow-xl rounded-2xl border border-[#EBE9E1] max-w-[210mm] mx-auto text-xs font-sans leading-normal print:p-0 print:shadow-none print:border-none print:m-0"
-      >
+      <div className="overflow-x-auto w-full pb-4">
+        <div
+          ref={reportRef}
+          id="print-report-container"
+          className="bg-white text-[#3D3D3D] p-6 sm:p-10 shadow-xl rounded-2xl border border-[#EBE9E1] w-[210mm] min-w-[210mm] mx-auto text-xs font-sans leading-normal print:p-0 print:shadow-none print:border-none print:m-0"
+        >
         {/* 1. Header Banner */}
         <header className="border-b-4 border-[#344E41] pb-4 mb-6">
           <div className="flex items-center justify-between">
@@ -556,6 +557,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
             </div>
           </div>
         </footer>
+      </div>
       </div>
     </div>
   );
