@@ -1,5 +1,5 @@
-import React from 'react';
-import { PhytosanitaryTable, PhytosanitaryRow } from '../types';
+import React, { useState, useEffect } from 'react';
+import { PhytosanitaryTable, PhytosanitaryRow, Pesticide } from '../types';
 import { Shield, Plus, Trash2, Edit2, AlertCircle } from 'lucide-react';
 
 interface PhytosanitaryTableEditorProps {
@@ -11,6 +11,24 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
   table,
   onChange,
 }) => {
+  const [pesticides, setPesticides] = useState<Pesticide[]>([]);
+
+  useEffect(() => {
+    // @ts-ignore
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+    const token = localStorage.getItem('agri_admin_token');
+    fetch(`${API_BASE}/pesticides`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setPesticides(data);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const uniqueTargets = Array.from(new Set(pesticides.map(p => p.target_pest).filter(Boolean))) as string[];
+
   const handleTitleChange = (newTitle: string) => {
     onChange({
       ...table,
@@ -34,9 +52,27 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
   };
 
   const handleUpdateRow = (id: string, field: keyof PhytosanitaryRow, value: string) => {
-    const updatedRows = table.rows.map((row) =>
+    let updatedRows = table.rows.map((row) =>
       row.id === id ? { ...row, [field]: value } : row
     );
+
+    // If product changed, auto-fill dosage
+    if (field === 'product') {
+      const selectedPesticide = pesticides.find(p => p.product_name === value);
+      if (selectedPesticide && selectedPesticide.dosage) {
+        updatedRows = updatedRows.map((row) =>
+          row.id === id ? { ...row, doseHa: selectedPesticide.dosage as string } : row
+        );
+      }
+    }
+
+    // If target changed, reset product
+    if (field === 'target') {
+      updatedRows = updatedRows.map((row) =>
+        row.id === id ? { ...row, product: '', doseHa: '' } : row
+      );
+    }
+
     onChange({
       ...table,
       rows: updatedRows,
@@ -104,24 +140,48 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                 <tr key={row.id} className="hover:bg-[#F9F8F5] transition-colors">
                   {/* Target */}
                   <td className="p-2">
-                    <input
-                      type="text"
+                    <select
                       value={row.target}
                       onChange={(e) => handleUpdateRow(row.id, 'target', e.target.value)}
-                      placeholder="ex: Acariens Rouges"
                       className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
-                    />
+                    >
+                      <option value="">Sélectionner Cible...</option>
+                      {uniqueTargets.map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                    {/* Fallback input if target not in list */}
+                    {!uniqueTargets.includes(row.target) && row.target && (
+                       <input 
+                         type="text" 
+                         value={row.target} 
+                         onChange={(e) => handleUpdateRow(row.id, 'target', e.target.value)}
+                         className="w-full mt-1 text-[10px] text-gray-500 bg-white border border-[#EBE9E1] rounded px-1 py-0.5"
+                       />
+                    )}
                   </td>
 
                   {/* Product */}
                   <td className="p-2">
-                    <input
-                      type="text"
+                    <select
                       value={row.product}
                       onChange={(e) => handleUpdateRow(row.id, 'product', e.target.value)}
-                      placeholder="ex: Abamectine 18 g/L"
                       className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
-                    />
+                      disabled={!row.target}
+                    >
+                      <option value="">Sélectionner Produit...</option>
+                      {pesticides.filter(p => p.target_pest === row.target).map(p => (
+                        <option key={p.id} value={p.product_name}>{p.product_name}</option>
+                      ))}
+                    </select>
+                    {!pesticides.find(p => p.product_name === row.product && p.target_pest === row.target) && row.product && (
+                      <input 
+                        type="text" 
+                        value={row.product} 
+                        onChange={(e) => handleUpdateRow(row.id, 'product', e.target.value)}
+                        className="w-full mt-1 text-[10px] text-gray-500 bg-white border border-[#EBE9E1] rounded px-1 py-0.5"
+                      />
+                    )}
                   </td>
 
                   {/* Dose */}

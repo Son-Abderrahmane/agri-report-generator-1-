@@ -35,6 +35,23 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
     try {
       const element = reportRef.current;
 
+      // Temporarily bypass viewport constraints for html-to-image
+      const originalStyle = element.style.cssText;
+      const parent = element.parentElement;
+      const originalParentStyle = parent ? parent.style.cssText : '';
+      
+      element.style.position = 'absolute';
+      element.style.left = '0';
+      element.style.top = '0';
+      element.style.width = '210mm';
+      element.style.maxWidth = '210mm';
+      element.style.transform = 'scale(1)';
+      
+      if (parent) {
+        parent.style.overflow = 'visible';
+        parent.style.width = 'auto';
+      }
+
       // Use html-to-image which renders via SVG foreignObject in browser natively, avoiding html2canvas oklab parsing errors
       let imgData = '';
       try {
@@ -43,6 +60,9 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
           pixelRatio: 2,
           backgroundColor: '#ffffff',
           cacheBust: false,
+          style: {
+            transform: 'none'
+          }
         });
       } catch (firstErr) {
         console.warn('First attempt with toPng failed, retrying with skipFonts: true', firstErr);
@@ -51,7 +71,16 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
           pixelRatio: 2,
           backgroundColor: '#ffffff',
           skipFonts: true,
+          style: {
+            transform: 'none'
+          }
         });
+      }
+
+      // Revert styles immediately after capture
+      element.style.cssText = originalStyle;
+      if (parent) {
+        parent.style.cssText = originalParentStyle;
       }
 
       if (!imgData) {

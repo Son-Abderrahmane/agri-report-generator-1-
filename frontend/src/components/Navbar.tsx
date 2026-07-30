@@ -12,12 +12,13 @@ import {
   RefreshCw,
   Wifi,
   WifiOff,
-  LogOut
+  LogOut,
+  Settings
 } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'editor' | 'preview' | 'list' | 'templates';
-  setActiveTab: (tab: 'editor' | 'preview' | 'list' | 'templates') => void;
+  activeTab: 'editor' | 'preview' | 'list' | 'templates' | 'settings';
+  setActiveTab: (tab: 'editor' | 'preview' | 'list' | 'templates' | 'settings') => void;
   reportTitle: string;
   reportStatus: 'draft' | 'validated' | 'archived';
   onStatusChange: (status: 'draft' | 'validated' | 'archived') => void;
@@ -123,6 +124,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Sparkles className="w-4 h-4" />
               <span>Modèles</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === 'settings'
+                  ? 'bg-[#A3B18A] text-[#344E41] shadow-sm font-bold'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span>Paramètres</span>
             </button>
           </nav>
 

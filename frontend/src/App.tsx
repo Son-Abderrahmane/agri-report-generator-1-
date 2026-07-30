@@ -15,6 +15,7 @@ import { ReportPDFView } from './components/ReportPDFView';
 import { ReportsList } from './components/ReportsList';
 import { TemplateSelector } from './components/TemplateSelector';
 import { Login } from './components/Login';
+import { MasterDataSettings } from './components/MasterDataSettings';
 import { CheckCircle, AlertCircle, Save, FileText, Download } from 'lucide-react';
 
 // @ts-ignore
@@ -33,7 +34,7 @@ if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'list' | 'templates'>('editor');
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'list' | 'templates' | 'settings'>('editor');
   const [report, setReport] = useState<Report>(() => createNewReport());
   const [reportsList, setReportsList] = useState<Report[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -450,6 +451,10 @@ export default function App() {
           <TemplateSelector
             onSelectTemplate={(templateId) => handleNewReport(templateId)}
           />
+        )}
+
+        {activeTab === 'settings' && (
+          <MasterDataSettings apiBase={API_BASE} token={authToken || ''} />
         )}
       </main>
     </div>

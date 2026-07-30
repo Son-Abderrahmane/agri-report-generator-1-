@@ -126,3 +126,47 @@ export interface CropTemplate {
   description: string;
   defaultReport: Partial<Report>;
 }
+
+// --- Master Data Types ---
+
+export interface Crop {
+  id: number;
+  name: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Pesticide {
+  id: number;
+  crop_id?: number;
+  crop_name?: string;
+  target_pest?: string;
+  product_name: string;
+  holder?: string;
+  supplier?: string;
+  registration_number?: string;
+  valid_until?: string;
+  dosage?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface QuickFormula {
+  id: number;
+  category: string;
+  title?: string;
+  content: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface EvaluationTemplate {
+  id: number;
+  name: string;
+  risk_level: string;
+  condition_explanation?: string;
+  preventive_action?: string;
+  report_sentence?: string;
+  created_at?: string;
+  updated_at?: string;
+}

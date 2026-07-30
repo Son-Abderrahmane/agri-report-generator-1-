@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\MasterDataController;
 
 use Illuminate\Http\Request;
 
@@ -31,4 +32,25 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/reports/{id}/duplicate', [ReportController::class, 'duplicate']);
     Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
     Route::post('/upload', [ReportController::class, 'upload']);
+
+    // Master Data Routes
+    Route::get('/crops', [MasterDataController::class, 'getCrops']);
+    Route::post('/crops', [MasterDataController::class, 'storeCrop']);
+    Route::put('/crops/{id}', [MasterDataController::class, 'updateCrop']);
+    Route::delete('/crops/{id}', [MasterDataController::class, 'destroyCrop']);
+
+    Route::get('/pesticides', [MasterDataController::class, 'getPesticides']);
+    Route::post('/pesticides', [MasterDataController::class, 'storePesticide']);
+    Route::put('/pesticides/{id}', [MasterDataController::class, 'updatePesticide']);
+    Route::delete('/pesticides/{id}', [MasterDataController::class, 'destroyPesticide']);
+
+    Route::get('/quick-formulas', [MasterDataController::class, 'getQuickFormulas']);
+    Route::post('/quick-formulas', [MasterDataController::class, 'storeQuickFormula']);
+    Route::put('/quick-formulas/{id}', [MasterDataController::class, 'updateQuickFormula']);
+    Route::delete('/quick-formulas/{id}', [MasterDataController::class, 'destroyQuickFormula']);
+
+    Route::get('/evaluation-templates', [MasterDataController::class, 'getEvaluationTemplates']);
+    Route::post('/evaluation-templates', [MasterDataController::class, 'storeEvaluationTemplate']);
+    Route::put('/evaluation-templates/{id}', [MasterDataController::class, 'updateEvaluationTemplate']);
+    Route::delete('/evaluation-templates/{id}', [MasterDataController::class, 'destroyEvaluationTemplate']);
 });

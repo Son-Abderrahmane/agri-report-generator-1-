@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Bug,
   Plus,
+  Trash2,
   RefreshCw,
   ChevronDown,
   ChevronUp,
@@ -60,6 +61,8 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
 }) => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [risks, setRisks] = useState<PathogenRisk[]>([]);
+  const [dbFormulas, setDbFormulas] = useState<any[]>([]);
+  const [dbEvaluations, setDbEvaluations] = useState<PathogenRisk[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState(farmLocation || 'Agadir');
   const [searchResults, setSearchResults] = useState<{ name: string; country: string; lat: number; lon: number }[]>([]);
@@ -71,6 +74,36 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
   useEffect(() => {
     const defaultLoc = farmLocation && farmLocation.trim() !== '' ? farmLocation : 'Agadir';
     handleSearchAndFetch(defaultLoc);
+
+    // Fetch master data
+    // @ts-ignore
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+    const token = localStorage.getItem('agri_admin_token');
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    fetch(`${API_BASE}/quick-formulas`, { headers })
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d)) setDbFormulas(d); })
+      .catch(e => console.error(e));
+
+    fetch(`${API_BASE}/evaluation-templates`, { headers })
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d)) {
+          const formatted = d.map((ev: any) => ({
+            id: `eval_${ev.id}`,
+            name: ev.name,
+            riskLevel: ev.risk_level,
+            score: 100,
+            conditionExplanation: ev.condition_explanation || '',
+            preventiveAction: ev.preventive_action || '',
+            reportSentence: ev.report_sentence || ''
+          }));
+          setDbEvaluations(formatted);
+        }
+      })
+      .catch(e => console.error(e));
+
   }, [farmLocation]);
 
   const handleSearchAndFetch = async (query: string) => {
@@ -200,8 +233,19 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
   };
 
   const handleInsertIndividualRisk = (risk: PathogenRisk) => {
-    appendPhrase(risk.reportSentence);
-    setInsertedAlerts((prev) => ({ ...prev, [risk.id]: true }));
+    const sentence = risk.reportSentence;
+    if (!sentence) return;
+
+    if (insertedAlerts[risk.id]) {
+      // Remove sentence
+      const updated = summary.replace(sentence, '').replace('  ', ' ').trim();
+      onChange(updated);
+      setInsertedAlerts((prev) => ({ ...prev, [risk.id]: false }));
+    } else {
+      // Add sentence
+      appendPhrase(sentence);
+      setInsertedAlerts((prev) => ({ ...prev, [risk.id]: true }));
+    }
   };
 
   return (
@@ -412,7 +456,7 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
 
                 {/* Risk list items */}
                 <div className="space-y-2.5">
-                  {risks.map((risk) => {
+                  {[...risks, ...dbEvaluations].map((risk) => {
                     const isHigh = risk.riskLevel === 'Élevé';
                     const isMod = risk.riskLevel === 'Modéré';
                     const isInserted = insertedAlerts[risk.id];
@@ -463,8 +507,8 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
                         >
                           {isInserted ? (
                             <>
-                              <Check className="w-3.5 h-3.5 text-emerald-700" />
-                              <span>Ajouté</span>
+                              <Trash2 className="w-3.5 h-3.5 text-red-700" />
+                              <span className="text-red-700">Supprimer</span>
                             </>
                           ) : (
                             <>
@@ -500,7 +544,7 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
           <Sparkles className="w-3 h-3 text-[#D4A373]" />
           <span>Formules rapides :</span>
         </span>
-        {QUICK_PHRASES.map((phrase, idx) => (
+        {(dbFormulas.length > 0 ? dbFormulas.map(f => f.content) : QUICK_PHRASES).map((phrase, idx) => (
           <button
             key={idx}
             type="button"
