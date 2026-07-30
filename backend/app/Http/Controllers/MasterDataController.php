@@ -63,7 +63,7 @@ class MasterDataController extends Controller
     public function importPesticides(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv'
+            'file' => 'required|file'
         ]);
 
         $path = $request->file('file')->getRealPath();

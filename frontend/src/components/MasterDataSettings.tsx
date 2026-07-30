@@ -10,6 +10,8 @@ interface MasterDataSettingsProps {
 export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase, token }) => {
   const [activeTab, setActiveTab] = useState<'pesticides' | 'crops' | 'formulas' | 'evaluations'>('pesticides');
   const [isLoading, setIsLoading] = useState(false);
+  const [showImportZone, setShowImportZone] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   // States
   const [crops, setCrops] = useState<Crop[]>([]);
@@ -30,10 +32,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
+  const handleImportExcel = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
     
@@ -41,12 +40,27 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     try {
       const res = await fetch(`${apiBase}/pesticides/import`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
         body: formData
       });
-      const data = await res.json();
+      
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        // If it's not JSON, it's likely a server HTML error
+        const text = await res.text();
+        console.error('Non-JSON response from server:', text);
+        alert(`Erreur Serveur: Impossible de lire la réponse (Vérifiez la console). Statut: ${res.status}`);
+        return;
+      }
+
       if (res.ok) {
         alert(data.message || 'Importation réussie');
+        setShowImportZone(false);
         fetchData();
       } else {
         alert(`Erreur: ${data.error || 'Erreur inconnue'}`);
@@ -56,6 +70,20 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     } finally {
       setIsLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      handleImportExcel(e.target.files[0]);
+    }
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files?.[0]) {
+      handleImportExcel(e.dataTransfer.files[0]);
     }
   };
 
@@ -207,12 +235,16 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-[#344E41]">Registre des Produits</h3>
                 <div className="flex space-x-2">
-                  <input type="file" accept=".xlsx,.xls,.csv" className="hidden" ref={fileInputRef} onChange={handleImportExcel} />
+                  <input type="file" accept=".xlsx,.xls,.csv" className="hidden" ref={fileInputRef} onChange={onFileInputChange} />
                   <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="bg-[#E9EDC9] text-[#344E41] border border-[#CCD5AE] px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1"
+                    onClick={() => setShowImportZone(!showImportZone)}
+                    className={`border px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1 transition-colors ${
+                      showImportZone 
+                        ? 'bg-[#344E41] text-[#E9EDC9] border-[#344E41]' 
+                        : 'bg-[#E9EDC9] text-[#344E41] border-[#CCD5AE]'
+                    }`}
                   >
-                    <span>Importer Excel</span>
+                    <span>{showImportZone ? 'Fermer Import' : 'Importer Excel'}</span>
                   </button>
                   <button 
                     onClick={() => setEditingPesticide({ product_name: '' })}
@@ -222,6 +254,33 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                   </button>
                 </div>
               </div>
+
+              {showImportZone && (
+                <div 
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={onDrop}
+                  className={`mb-6 p-8 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${
+                    isDragging 
+                      ? 'border-[#344E41] bg-[#E9EDC9]/30' 
+                      : 'border-[#CCD5AE] bg-[#F9F8F5]'
+                  }`}
+                >
+                  <div className="p-3 bg-white rounded-full shadow-sm mb-3">
+                    <svg className="w-8 h-8 text-[#A3B18A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <h4 className="text-sm font-bold text-[#344E41] mb-1">Glissez-déposez votre fichier Excel ici</h4>
+                  <p className="text-xs text-[#8C8F85] mb-4">ou cliquez ci-dessous pour parcourir (.xlsx, .xls, .csv)</p>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-white border border-[#CCD5AE] text-[#344E41] hover:bg-[#E9EDC9] px-4 py-2 rounded-lg text-xs font-bold transition-colors"
+                  >
+                    Parcourir les fichiers
+                  </button>
+                </div>
+              )}
 
               {editingPesticide && (
                 <div className="bg-[#F9F8F5] p-4 rounded-xl border border-[#CCD5AE] mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
