@@ -83,16 +83,29 @@ class MasterDataController extends Controller
 
             $importedCount = 0;
             $rows->each(function(array $row) use (&$importedCount) {
-                $cropName = $row['Culture'] ?? $row['culture'] ?? null;
-                $productName = $row['Produits'] ?? $row['produits'] ?? $row['Produit'] ?? null;
-                $targetPest = $row['Cible'] ?? $row['cible'] ?? null;
-                $activeIngredient = $row['Matière Active'] ?? $row['matiere_active'] ?? $row['Active Ingredient'] ?? null;
-                $dosage = $row['Dosage'] ?? $row['dosage'] ?? null;
+                // Normalize keys (remove spaces, accents, special chars, make lowercase)
+                $normalizedRow = [];
+                foreach ($row as $key => $value) {
+                    // Basic transliteration for accents
+                    $cleanKey = str_replace(
+                        ['é','è','ê','ë','à','â','î','ï','ô','ö','ù','û','ü','ç'],
+                        ['e','e','e','e','a','a','i','i','o','o','u','u','u','c'],
+                        mb_strtolower(trim($key))
+                    );
+                    $normKey = preg_replace('/[^a-z0-9]/', '', $cleanKey);
+                    $normalizedRow[$normKey] = $value;
+                }
+
+                $cropName = $normalizedRow['culture'] ?? $normalizedRow['cultures'] ?? null;
+                $productName = $normalizedRow['produit'] ?? $normalizedRow['produits'] ?? $normalizedRow['nomcommercial'] ?? null;
+                $targetPest = $normalizedRow['cible'] ?? $normalizedRow['cibles'] ?? $normalizedRow['bioagresseur'] ?? $normalizedRow['maladie'] ?? $normalizedRow['ravageur'] ?? null;
+                $activeIngredient = $normalizedRow['matiereactive'] ?? $normalizedRow['matieresactives'] ?? $normalizedRow['activeingredient'] ?? null;
+                $dosage = $normalizedRow['dose'] ?? $normalizedRow['dosage'] ?? null;
                 
-                $holder = $row['Détenteur'] ?? $row['detenteur'] ?? null;
-                $supplier = $row['Fournisseur'] ?? $row['fournisseur'] ?? null;
-                $regNumber = $row['Numéro homologation'] ?? $row['numero_homologation'] ?? null;
-                $validUntil = $row['Valable jusqu\'au'] ?? $row['valable_jusqu_au'] ?? null;
+                $holder = $normalizedRow['detenteur'] ?? $normalizedRow['societe'] ?? null;
+                $supplier = $normalizedRow['fournisseur'] ?? $normalizedRow['distributeur'] ?? null;
+                $regNumber = $normalizedRow['numerohomologation'] ?? $normalizedRow['homologation'] ?? $normalizedRow['numhomologation'] ?? null;
+                $validUntil = $normalizedRow['valablejusquau'] ?? $normalizedRow['validite'] ?? $normalizedRow['datefinoctroi'] ?? null;
 
                 if ($productName) {
                     $cropId = null;
