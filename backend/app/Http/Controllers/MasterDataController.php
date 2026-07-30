@@ -55,6 +55,9 @@ class MasterDataController extends Controller
             'registration_number' => 'nullable|string',
             'valid_until' => 'nullable|string',
             'dosage' => 'nullable|string',
+            'teneur' => 'nullable|string',
+            'dar' => 'nullable|string',
+            'nbr_application' => 'nullable|string',
         ]);
         $pesticide = Pesticide::create($validated);
         return response()->json($pesticide, 201);
@@ -115,10 +118,13 @@ class MasterDataController extends Controller
                 $productName = $normalizedRow['produit'] ?? $normalizedRow['produits'] ?? $normalizedRow['nomcommercial'] ?? $normalizedRow['specialitecommerciale'] ?? $normalizedRow['specialite'] ?? null;
                 $targetPest = $normalizedRow['cible'] ?? $normalizedRow['cibles'] ?? $normalizedRow['bioagresseur'] ?? $normalizedRow['maladie'] ?? $normalizedRow['ravageur'] ?? $normalizedRow['usage'] ?? null;
                 $activeIngredient = $normalizedRow['matiereactive'] ?? $normalizedRow['matieresactives'] ?? $normalizedRow['activeingredient'] ?? null;
+                $teneur = $normalizedRow['teneur'] ?? $normalizedRow['content'] ?? null;
                 $dosage = $normalizedRow['dose'] ?? $normalizedRow['dosage'] ?? $normalizedRow['dosedemploi'] ?? null;
+                $dar = $normalizedRow['dar'] ?? $normalizedRow['delaiavantrecolte'] ?? null;
+                $nbrApplication = $normalizedRow['nbrapplication'] ?? $normalizedRow['nombreapplication'] ?? $normalizedRow['nombreapplications'] ?? $normalizedRow['nbrapplications'] ?? null;
                 
-                $holder = $normalizedRow['detenteur'] ?? $normalizedRow['societe'] ?? $normalizedRow['titulaire'] ?? null;
-                $supplier = $normalizedRow['fournisseur'] ?? $normalizedRow['distributeur'] ?? null;
+                $holder = $normalizedRow['detenteur'] ?? $normalizedRow['societe'] ?? $normalizedRow['titulaire'] ?? $normalizedRow['malik'] ?? null;
+                $supplier = $normalizedRow['fournisseur'] ?? $normalizedRow['distributeur'] ?? $normalizedRow['mawrid'] ?? null;
                 $regNumber = $normalizedRow['numerohomologation'] ?? $normalizedRow['homologation'] ?? $normalizedRow['numhomologation'] ?? null;
                 $validUntil = $normalizedRow['valablejusquau'] ?? $normalizedRow['validite'] ?? $normalizedRow['datefinoctroi'] ?? null;
 
@@ -136,7 +142,10 @@ class MasterDataController extends Controller
                     ], [
                         'crop_id' => $cropId,
                         'active_ingredient' => $activeIngredient,
+                        'teneur' => $teneur,
                         'dosage' => $dosage,
+                        'dar' => $dar,
+                        'nbr_application' => $nbrApplication,
                         'holder' => $holder,
                         'supplier' => $supplier,
                         'registration_number' => $regNumber,
@@ -175,6 +184,9 @@ class MasterDataController extends Controller
             'registration_number' => 'nullable|string',
             'valid_until' => 'nullable|string',
             'dosage' => 'nullable|string',
+            'teneur' => 'nullable|string',
+            'dar' => 'nullable|string',
+            'nbr_application' => 'nullable|string',
         ]);
         $pesticide->update($validated);
         return response()->json($pesticide);

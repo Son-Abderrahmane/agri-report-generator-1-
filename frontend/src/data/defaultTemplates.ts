@@ -51,18 +51,22 @@ export const createNewReport = (templateId?: string): Report => {
           {
             id: 'phy_t1',
             target: 'Tuta Absoluta',
+            activeIngredient: '',
             product: 'Chlorantraniliprole 200 g/L',
             doseHa: '175 mL/ha',
             darDays: '3',
-            instructions: 'Traitement ciblé en soirée. Alterner avec du Bacillus thuringiensis.',
+            nbrApplication: '',
+            fournisseur: '',
           },
           {
             id: 'phy_t2',
             target: 'Mildiou (Phytophthora)',
+            activeIngredient: '',
             product: 'Fluopicolide + Propamocarbe',
             doseHa: '1.5 L/ha',
             darDays: '7',
-            instructions: 'Pulvérisation homogène sur le feuillage mouillé du bas.',
+            nbrApplication: '',
+            fournisseur: '',
           }
         ]
       },
@@ -152,18 +156,22 @@ export const createNewReport = (templateId?: string): Report => {
         {
           id: 'phy_1',
           target: 'Acariens Rouges',
+          activeIngredient: '',
           product: 'Abamectine 18 g/L (Acaricide)',
           doseHa: '0.5 L/ha',
           darDays: '3',
-          instructions: 'Traiter en fin de journée. Assurer un mouillage complet de la face inférieure des feuilles.',
+          nbrApplication: '',
+          fournisseur: '',
         },
         {
           id: 'phy_2',
           target: 'Oïdum / Botrytis (Préventif)',
+          activeIngredient: '',
           product: 'Bicarbonate de Potassium + Soufre',
           doseHa: '3.0 kg/ha',
           darDays: '1',
-          instructions: 'Application foliaire à haute pression en ciblant la zone florale.',
+          nbrApplication: '',
+          fournisseur: '',
         }
       ]
     },

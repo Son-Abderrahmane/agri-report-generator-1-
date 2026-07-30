@@ -60,6 +60,21 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
     )
   ).sort() as string[];
 
+  const getActiveIngredientsForTarget = (target: string) => {
+    return Array.from(new Set(
+      pesticides
+        .filter(p => p.target_pest === target && (!selectedCrop || p.crop_name === selectedCrop))
+        .map(p => p.active_ingredient)
+        .filter(Boolean)
+    )).sort() as string[];
+  };
+
+  const getProductsForTargetAndActive = (target: string, active: string) => {
+    return pesticides
+      .filter(p => p.target_pest === target && p.active_ingredient === active && (!selectedCrop || p.crop_name === selectedCrop))
+      .sort((a, b) => a.product_name.localeCompare(b.product_name));
+  };
+
   const handleTitleChange = (newTitle: string) => {
     onChange({
       ...table,
@@ -70,11 +85,13 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
   const handleAddRow = () => {
     const newRow: PhytosanitaryRow = {
       id: `phy_${Date.now()}`,
-      target: 'Nouvelle cible / Bioagresseur',
+      target: '',
+      activeIngredient: '',
       product: '',
       doseHa: '',
-      darDays: '3',
-      instructions: '',
+      darDays: '',
+      nbrApplication: '',
+      fournisseur: '',
     };
     onChange({
       ...table,
@@ -87,20 +104,34 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
       row.id === id ? { ...row, [field]: value } : row
     );
 
-    if (field === 'product') {
-      const selectedPesticide = pesticides.find(p => `${p.product_name} (${p.active_ingredient || 'N/A'})` === value || p.product_name === value);
-      if (selectedPesticide && selectedPesticide.dosage) {
-        updatedRows = updatedRows.map((row) =>
-          row.id === id ? { ...row, doseHa: selectedPesticide.dosage as string } : row
-        );
-      }
-    }
-
-    // If target changed, reset product
+    // If target changed, reset everything downstream
     if (field === 'target') {
       updatedRows = updatedRows.map((row) =>
-        row.id === id ? { ...row, product: '', doseHa: '' } : row
+        row.id === id ? { ...row, activeIngredient: '', product: '', doseHa: '', darDays: '', nbrApplication: '', fournisseur: '' } : row
       );
+    }
+    
+    // If activeIngredient changed, reset everything downstream
+    if (field === 'activeIngredient') {
+      updatedRows = updatedRows.map((row) =>
+        row.id === id ? { ...row, product: '', doseHa: '', darDays: '', nbrApplication: '', fournisseur: '' } : row
+      );
+    }
+
+    // Auto-fill when product changes
+    if (field === 'product') {
+      const selectedPesticide = pesticides.find(p => p.product_name === value);
+      if (selectedPesticide) {
+        updatedRows = updatedRows.map((row) =>
+          row.id === id ? { 
+            ...row, 
+            doseHa: selectedPesticide.dosage || '',
+            darDays: selectedPesticide.dar || '',
+            nbrApplication: selectedPesticide.nbr_application || '',
+            fournisseur: selectedPesticide.supplier || ''
+          } : row
+        );
+      }
     }
 
     onChange({
@@ -162,10 +193,12 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
           <thead className="bg-[#F9F8F5] text-[#344E41] font-bold border-b border-[#EBE9E1]">
             <tr>
               <th className="p-3 min-w-[140px]">Cible / Problème</th>
-              <th className="p-3 min-w-[180px]">Produit Préconisé / Matière Active</th>
-              <th className="p-3 min-w-[100px]">Dose / ha</th>
-              <th className="p-3 min-w-[80px]">DAR (Jours)</th>
-              <th className="p-3 min-w-[220px]">Instructions & Mode d'application</th>
+              <th className="p-3 min-w-[150px]">Matière Active</th>
+              <th className="p-3 min-w-[150px]">Produit Préconisé</th>
+              <th className="p-3 min-w-[90px]">Dose / ha</th>
+              <th className="p-3 min-w-[70px]">DAR (Jours)</th>
+              <th className="p-3 min-w-[70px]">Nbr App.</th>
+              <th className="p-3 min-w-[120px]">Fournisseur</th>
               <th className="p-3 w-10 text-center">Action</th>
             </tr>
           </thead>
@@ -202,31 +235,36 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                     )}
                   </td>
 
+                                {/* Active Ingredient */}
+                  <td className="p-2">
+                    <select
+                      value={row.activeIngredient}
+                      onChange={(e) => handleUpdateRow(row.id, 'activeIngredient', e.target.value)}
+                      className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
+                      disabled={!row.target}
+                    >
+                      <option value="">Matière Active...</option>
+                      {getActiveIngredientsForTarget(row.target).map(a => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </select>
+                  </td>
+
                   {/* Product */}
                   <td className="p-2">
                     <select
                       value={row.product}
                       onChange={(e) => handleUpdateRow(row.id, 'product', e.target.value)}
                       className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
-                      disabled={!row.target}
+                      disabled={!row.activeIngredient}
                     >
-                      <option value="">Sélectionner Produit/Matière Active...</option>
-                      {pesticides
-                        .filter(p => p.target_pest === row.target && (!selectedCrop || p.crop_name === selectedCrop))
-                        .map(p => {
-                           const displayName = `${p.product_name} (${p.active_ingredient || 'N/A'})`;
-                           return <option key={p.id} value={displayName}>{displayName}</option>;
-                        })
+                      <option value="">Sélectionner Produit...</option>
+                      {getProductsForTargetAndActive(row.target, row.activeIngredient)
+                        .map(p => (
+                           <option key={p.id} value={p.product_name}>{p.product_name}</option>
+                        ))
                       }
                     </select>
-                    {!pesticides.find(p => `${p.product_name} (${p.active_ingredient || 'N/A'})` === row.product || p.product_name === row.product) && row.product && (
-                      <input 
-                        type="text" 
-                        value={row.product} 
-                        onChange={(e) => handleUpdateRow(row.id, 'product', e.target.value)}
-                        className="w-full mt-1 text-[10px] text-gray-500 bg-white border border-[#EBE9E1] rounded px-1 py-0.5"
-                      />
-                    )}
                   </td>
 
                   {/* Dose */}
@@ -235,7 +273,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                       type="text"
                       value={row.doseHa}
                       onChange={(e) => handleUpdateRow(row.id, 'doseHa', e.target.value)}
-                      placeholder="ex: 0.5 L/ha"
+                      placeholder="Dose"
                       className="w-full text-xs font-bold text-[#344E41] bg-[#E9EDC9]/50 border border-[#CCD5AE] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
                     />
                   </td>
@@ -246,23 +284,34 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                       type="text"
                       value={row.darDays}
                       onChange={(e) => handleUpdateRow(row.id, 'darDays', e.target.value)}
-                      placeholder="ex: 3"
+                      placeholder="DAR"
                       className="w-full text-xs font-mono font-bold text-center text-[#D4A373] bg-[#D4A373]/10 border border-[#D4A373]/30 rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#D4A373] focus:outline-none"
                     />
                   </td>
 
-                  {/* Instructions */}
+                  {/* Nbr Application */}
                   <td className="p-2">
                     <input
                       type="text"
-                      value={row.instructions}
-                      onChange={(e) => handleUpdateRow(row.id, 'instructions', e.target.value)}
-                      placeholder="ex: Traiter en fin de journée avec mouillage suffisant..."
-                      className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
+                      value={row.nbrApplication}
+                      onChange={(e) => handleUpdateRow(row.id, 'nbrApplication', e.target.value)}
+                      placeholder="Nbr"
+                      className="w-full text-xs text-center border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:border-[#A3B18A] focus:outline-none"
                     />
                   </td>
 
-                  {/* Delete */}
+                  {/* Fournisseur */}
+                  <td className="p-2">
+                    <input
+                      type="text"
+                      value={row.fournisseur}
+                      onChange={(e) => handleUpdateRow(row.id, 'fournisseur', e.target.value)}
+                      placeholder="Fournisseur"
+                      className="w-full text-xs border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:border-[#A3B18A] focus:outline-none"
+                    />
+                  </td>
+
+                  {/* Action */}
                   <td className="p-2 text-center">
                     <button
                       onClick={() => handleRemoveRow(row.id)}

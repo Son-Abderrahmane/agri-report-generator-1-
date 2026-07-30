@@ -40,10 +40,12 @@ export interface ObservationPhoto {
 export interface PhytosanitaryRow {
   id: string;
   target: string;
+  activeIngredient: string;
   product: string;
   doseHa: string;
   darDays: string;
-  instructions: string;
+  nbrApplication: string;
+  fournisseur: string;
 }
 
 export interface PhytosanitaryTable {
@@ -143,6 +145,9 @@ export interface Pesticide {
   target_pest?: string;
   product_name: string;
   active_ingredient?: string;
+  teneur?: string;
+  dar?: string;
+  nbr_application?: string;
   holder?: string;
   supplier?: string;
   registration_number?: string;

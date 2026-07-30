@@ -442,20 +442,24 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
               <thead>
                 <tr className="bg-[#344E41] text-[#E9EDC9] font-bold">
                   <th className="p-2 border border-[#344E41]">Cible / Problème</th>
-                  <th className="p-2 border border-[#344E41]">Produit Préconisé / Matière Active</th>
+                  <th className="p-2 border border-[#344E41]">Matière Active</th>
+                  <th className="p-2 border border-[#344E41]">Produit Préconisé</th>
                   <th className="p-2 border border-[#344E41] text-center">Dose / ha</th>
                   <th className="p-2 border border-[#344E41] text-center">DAR (j)</th>
-                  <th className="p-2 border border-[#344E41]">Instructions & Mode d'application</th>
+                  <th className="p-2 border border-[#344E41] text-center">Nbr App.</th>
+                  <th className="p-2 border border-[#344E41]">Fournisseur</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EBE9E1]">
                 {phytosanitaryTable.rows.map((row) => (
                   <tr key={row.id} className="even:bg-[#F9F8F5]">
                     <td className="p-2 border border-[#EBE9E1] font-bold text-[#344E41]">{row.target}</td>
+                    <td className="p-2 border border-[#EBE9E1] text-[#5A6352]">{row.activeIngredient || '-'}</td>
                     <td className="p-2 border border-[#EBE9E1] font-semibold text-[#3D3D3D]">{row.product}</td>
                     <td className="p-2 border border-[#EBE9E1] text-center font-bold text-[#344E41]">{row.doseHa}</td>
                     <td className="p-2 border border-[#EBE9E1] text-center font-mono font-bold text-[#D4A373]">{row.darDays}</td>
-                    <td className="p-2 border border-[#EBE9E1] text-[#5A6352]">{row.instructions}</td>
+                    <td className="p-2 border border-[#EBE9E1] text-center text-[#5A6352]">{row.nbrApplication || '-'}</td>
+                    <td className="p-2 border border-[#EBE9E1] text-[#5A6352]">{row.fournisseur || '-'}</td>
                   </tr>
                 ))}
               </tbody>

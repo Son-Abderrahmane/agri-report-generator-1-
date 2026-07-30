@@ -342,6 +342,9 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                   <input type="text" placeholder="Détenteur" value={editingPesticide.holder || ''} onChange={e => setEditingPesticide({...editingPesticide, holder: e.target.value})} className="border p-2 rounded text-sm"/>
                   <input type="text" placeholder="Fournisseur" value={editingPesticide.supplier || ''} onChange={e => setEditingPesticide({...editingPesticide, supplier: e.target.value})} className="border p-2 rounded text-sm"/>
                   <input type="text" placeholder="Dose (ex: 0.5 L/ha)" value={editingPesticide.dosage || ''} onChange={e => setEditingPesticide({...editingPesticide, dosage: e.target.value})} className="border p-2 rounded text-sm"/>
+                  <input type="text" placeholder="Teneur (ex: 250 g/l)" value={editingPesticide.teneur || ''} onChange={e => setEditingPesticide({...editingPesticide, teneur: e.target.value})} className="border p-2 rounded text-sm"/>
+                  <input type="text" placeholder="DAR (ex: 3 jours)" value={editingPesticide.dar || ''} onChange={e => setEditingPesticide({...editingPesticide, dar: e.target.value})} className="border p-2 rounded text-sm"/>
+                  <input type="text" placeholder="Nbr d'application (ex: 2/an)" value={editingPesticide.nbr_application || ''} onChange={e => setEditingPesticide({...editingPesticide, nbr_application: e.target.value})} className="border p-2 rounded text-sm"/>
                   <select value={editingPesticide.crop_name || ''} onChange={e => setEditingPesticide({...editingPesticide, crop_name: e.target.value})} className="border p-2 rounded text-sm">
                     <option value="">-- Sélectionner Culture --</option>
                     {crops.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -361,6 +364,9 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                       <th className="p-2 border">Produit</th>
                       <th className="p-2 border">Cible</th>
                       <th className="p-2 border">Dose</th>
+                      <th className="p-2 border">Teneur</th>
+                      <th className="p-2 border">DAR</th>
+                      <th className="p-2 border">Nbr App.</th>
                       <th className="p-2 border">Fournisseur</th>
                       <th className="p-2 border text-center">Actions</th>
                     </tr>
@@ -372,6 +378,9 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                         <td className="p-2 border font-bold text-[#344E41]">{p.product_name}</td>
                         <td className="p-2 border">{p.target_pest || '-'}</td>
                         <td className="p-2 border font-mono">{p.dosage || '-'}</td>
+                        <td className="p-2 border text-xs">{p.teneur || '-'}</td>
+                        <td className="p-2 border text-xs">{p.dar || '-'}</td>
+                        <td className="p-2 border text-xs">{p.nbr_application || '-'}</td>
                         <td className="p-2 border">{p.supplier || '-'}</td>
                         <td className="p-2 border text-center space-x-2">
                           <button onClick={() => setEditingPesticide(p)} className="text-blue-600 hover:text-blue-800"><Edit2 className="w-4 h-4"/></button>

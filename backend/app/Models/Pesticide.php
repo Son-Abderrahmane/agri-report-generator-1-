@@ -12,11 +12,14 @@ class Pesticide extends Model
         'target_pest',
         'product_name',
         'active_ingredient',
+        'teneur',
         'holder',
         'supplier',
         'registration_number',
         'valid_until',
-        'dosage'
+        'dosage',
+        'dar',
+        'nbr_application'
     ];
 
     public function crop()
