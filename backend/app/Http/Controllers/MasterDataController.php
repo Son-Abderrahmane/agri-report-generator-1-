@@ -82,7 +82,13 @@ class MasterDataController extends Controller
             $rows = \Spatie\SimpleExcel\SimpleExcelReader::create($path, $type)->getRows();
 
             $importedCount = 0;
-            $rows->each(function(array $row) use (&$importedCount) {
+            $firstRowKeys = [];
+
+            $rows->each(function(array $row) use (&$importedCount, &$firstRowKeys) {
+                if (empty($firstRowKeys)) {
+                    $firstRowKeys = array_keys($row);
+                }
+
                 // Normalize keys (remove spaces, accents, special chars, make lowercase)
                 $normalizedRow = [];
                 foreach ($row as $key => $value) {
@@ -130,6 +136,13 @@ class MasterDataController extends Controller
                     $importedCount++;
                 }
             });
+
+            if ($importedCount === 0 && !empty($firstRowKeys)) {
+                $keysStr = implode(', ', $firstRowKeys);
+                return response()->json([
+                    'error' => "0 produit importé. Les colonnes détectées sont : [{$keysStr}]. Si vous voyez toutes les colonnes collées ensemble, c'est un problème de séparateur CSV."
+                ], 400);
+            }
 
             return response()->json(['message' => "Imported {$importedCount} pesticides successfully."]);
         } catch (\Exception $e) {
