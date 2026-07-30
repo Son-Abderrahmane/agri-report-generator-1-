@@ -72,46 +72,55 @@ class MasterDataController extends Controller
             return response()->json(['error' => 'Please install spatie/simple-excel via composer.'], 500);
         }
 
-        $rows = \Spatie\SimpleExcel\SimpleExcelReader::create($path)->getRows();
+        $extension = $request->file('file')->getClientOriginalExtension();
+        if (strtolower($extension) === 'xls') {
+            return response()->json(['error' => "L'ancien format Excel (.xls) n'est pas supporté. Veuillez enregistrer votre fichier au format .xlsx ou .csv avant de l'importer."], 400);
+        }
 
-        $importedCount = 0;
-        $rows->each(function(array $row) use (&$importedCount) {
-            $cropName = $row['Culture'] ?? $row['culture'] ?? null;
-            $productName = $row['Produits'] ?? $row['produits'] ?? $row['Produit'] ?? null;
-            $targetPest = $row['Cible'] ?? $row['cible'] ?? null;
-            $activeIngredient = $row['Matière Active'] ?? $row['matiere_active'] ?? $row['Active Ingredient'] ?? null;
-            $dosage = $row['Dosage'] ?? $row['dosage'] ?? null;
-            
-            $holder = $row['Détenteur'] ?? $row['detenteur'] ?? null;
-            $supplier = $row['Fournisseur'] ?? $row['fournisseur'] ?? null;
-            $regNumber = $row['Numéro homologation'] ?? $row['numero_homologation'] ?? null;
-            $validUntil = $row['Valable jusqu\'au'] ?? $row['valable_jusqu_au'] ?? null;
+        try {
+            $rows = \Spatie\SimpleExcel\SimpleExcelReader::create($path)->getRows();
 
-            if ($productName) {
-                $cropId = null;
-                if ($cropName) {
-                    $crop = \App\Models\Crop::firstOrCreate(['name' => trim($cropName)]);
-                    $cropId = $crop->id;
+            $importedCount = 0;
+            $rows->each(function(array $row) use (&$importedCount) {
+                $cropName = $row['Culture'] ?? $row['culture'] ?? null;
+                $productName = $row['Produits'] ?? $row['produits'] ?? $row['Produit'] ?? null;
+                $targetPest = $row['Cible'] ?? $row['cible'] ?? null;
+                $activeIngredient = $row['Matière Active'] ?? $row['matiere_active'] ?? $row['Active Ingredient'] ?? null;
+                $dosage = $row['Dosage'] ?? $row['dosage'] ?? null;
+                
+                $holder = $row['Détenteur'] ?? $row['detenteur'] ?? null;
+                $supplier = $row['Fournisseur'] ?? $row['fournisseur'] ?? null;
+                $regNumber = $row['Numéro homologation'] ?? $row['numero_homologation'] ?? null;
+                $validUntil = $row['Valable jusqu\'au'] ?? $row['valable_jusqu_au'] ?? null;
+
+                if ($productName) {
+                    $cropId = null;
+                    if ($cropName) {
+                        $crop = \App\Models\Crop::firstOrCreate(['name' => trim($cropName)]);
+                        $cropId = $crop->id;
+                    }
+
+                    Pesticide::updateOrCreate([
+                        'product_name' => trim($productName),
+                        'crop_name' => $cropName ? trim($cropName) : null,
+                        'target_pest' => $targetPest ? trim($targetPest) : null,
+                    ], [
+                        'crop_id' => $cropId,
+                        'active_ingredient' => $activeIngredient,
+                        'dosage' => $dosage,
+                        'holder' => $holder,
+                        'supplier' => $supplier,
+                        'registration_number' => $regNumber,
+                        'valid_until' => $validUntil,
+                    ]);
+                    $importedCount++;
                 }
+            });
 
-                Pesticide::updateOrCreate([
-                    'product_name' => trim($productName),
-                    'crop_name' => $cropName ? trim($cropName) : null,
-                    'target_pest' => $targetPest ? trim($targetPest) : null,
-                ], [
-                    'crop_id' => $cropId,
-                    'active_ingredient' => $activeIngredient,
-                    'dosage' => $dosage,
-                    'holder' => $holder,
-                    'supplier' => $supplier,
-                    'registration_number' => $regNumber,
-                    'valid_until' => $validUntil,
-                ]);
-                $importedCount++;
-            }
-        });
-
-        return response()->json(['message' => "Imported {$importedCount} pesticides successfully."]);
+            return response()->json(['message' => "Imported {$importedCount} pesticides successfully."]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la lecture du fichier: ' . $e->getMessage()], 500);
+        }
     }
 
     public function updatePesticide(Request $request, $id)
