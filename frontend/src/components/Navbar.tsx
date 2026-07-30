@@ -242,6 +242,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Sparkles className="w-4 h-4 mb-0.5" />
             <span>Modèles</span>
           </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex flex-col items-center py-1 px-2 rounded-lg ${
+              activeTab === 'settings' ? 'text-[#E9EDC9] font-bold bg-[#344E41]/60' : 'text-white/70'
+            }`}
+          >
+            <Settings className="w-4 h-4 mb-0.5" />
+            <span>Paramètres</span>
+          </button>
         </div>
       </div>
     </header>
