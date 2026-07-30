@@ -210,6 +210,12 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     fetchData();
   };
 
+  const uniquePesticideCrops = Array.from(new Set(pesticides.map(p => p.crop_name).filter(Boolean))) as string[];
+  const filteredPesticides = pesticides.filter(p => !filterCulture || p.crop_name === filterCulture);
+  const itemsPerPage = 50;
+  const totalPages = Math.ceil(filteredPesticides.length / itemsPerPage);
+  const paginatedPesticides = filteredPesticides.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="bg-white rounded-2xl shadow-sm border border-[#EBE9E1] overflow-hidden">
@@ -360,7 +366,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                     </tr>
                   </thead>
                   <tbody>
-                    {pesticides.map(p => (
+                    {paginatedPesticides.map(p => (
                       <tr key={p.id} className="border-b hover:bg-gray-50">
                         <td className="p-2 border">{p.crop_name || '-'}</td>
                         <td className="p-2 border font-bold text-[#344E41]">{p.product_name}</td>
