@@ -97,12 +97,12 @@ class MasterDataController extends Controller
                 }
 
                 $cropName = $normalizedRow['culture'] ?? $normalizedRow['cultures'] ?? null;
-                $productName = $normalizedRow['produit'] ?? $normalizedRow['produits'] ?? $normalizedRow['nomcommercial'] ?? null;
-                $targetPest = $normalizedRow['cible'] ?? $normalizedRow['cibles'] ?? $normalizedRow['bioagresseur'] ?? $normalizedRow['maladie'] ?? $normalizedRow['ravageur'] ?? null;
+                $productName = $normalizedRow['produit'] ?? $normalizedRow['produits'] ?? $normalizedRow['nomcommercial'] ?? $normalizedRow['specialitecommerciale'] ?? $normalizedRow['specialite'] ?? null;
+                $targetPest = $normalizedRow['cible'] ?? $normalizedRow['cibles'] ?? $normalizedRow['bioagresseur'] ?? $normalizedRow['maladie'] ?? $normalizedRow['ravageur'] ?? $normalizedRow['usage'] ?? null;
                 $activeIngredient = $normalizedRow['matiereactive'] ?? $normalizedRow['matieresactives'] ?? $normalizedRow['activeingredient'] ?? null;
-                $dosage = $normalizedRow['dose'] ?? $normalizedRow['dosage'] ?? null;
+                $dosage = $normalizedRow['dose'] ?? $normalizedRow['dosage'] ?? $normalizedRow['dosedemploi'] ?? null;
                 
-                $holder = $normalizedRow['detenteur'] ?? $normalizedRow['societe'] ?? null;
+                $holder = $normalizedRow['detenteur'] ?? $normalizedRow['societe'] ?? $normalizedRow['titulaire'] ?? null;
                 $supplier = $normalizedRow['fournisseur'] ?? $normalizedRow['distributeur'] ?? null;
                 $regNumber = $normalizedRow['numerohomologation'] ?? $normalizedRow['homologation'] ?? $normalizedRow['numhomologation'] ?? null;
                 $validUntil = $normalizedRow['valablejusquau'] ?? $normalizedRow['validite'] ?? $normalizedRow['datefinoctroi'] ?? null;
