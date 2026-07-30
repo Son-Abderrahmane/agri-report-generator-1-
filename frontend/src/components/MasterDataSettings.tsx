@@ -151,6 +151,25 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     fetchData();
   };
 
+  const handleDeleteAllPesticides = async () => {
+    if (!window.confirm('ATTENTION: Voulez-vous vraiment supprimer TOUS les produits phytosanitaires ? Cette action est irréversible.')) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/pesticides/all`, { method: 'DELETE', headers });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || 'Tous les produits ont été supprimés.');
+        fetchData();
+      } else {
+        alert(`Erreur: ${data.error || 'Erreur inconnue'}`);
+        setIsLoading(false);
+      }
+    } catch (err) {
+      alert('Erreur lors de la suppression');
+      setIsLoading(false);
+    }
+  };
+
   // --- CRUD Formulas ---
   const handleSaveFormula = async () => {
     if (!editingFormula?.content) return;
@@ -236,6 +255,17 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                 <h3 className="text-lg font-bold text-[#344E41]">Registre des Produits</h3>
                 <div className="flex space-x-2">
                   <input type="file" accept=".xlsx,.xls,.csv" className="hidden" ref={fileInputRef} onChange={onFileInputChange} />
+                  
+                  {pesticides.length > 0 && (
+                    <button 
+                      onClick={handleDeleteAllPesticides}
+                      className="bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1 hover:bg-red-100 transition-colors"
+                      title="Supprimer tous les produits"
+                    >
+                      <Trash2 className="w-4 h-4"/>
+                    </button>
+                  )}
+
                   <button 
                     onClick={() => setShowImportZone(!showImportZone)}
                     className={`border px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1 transition-colors ${

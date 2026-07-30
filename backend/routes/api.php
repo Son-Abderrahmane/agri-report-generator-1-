@@ -46,6 +46,7 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/pesticides/import', [MasterDataController::class, 'importPesticides']);
     Route::post('/pesticides', [MasterDataController::class, 'storePesticide']);
     Route::put('/pesticides/{id}', [MasterDataController::class, 'updatePesticide']);
+    Route::delete('/pesticides/all', [MasterDataController::class, 'deleteAllPesticides']);
     Route::delete('/pesticides/{id}', [MasterDataController::class, 'destroyPesticide']);
 
     Route::get('/quick-formulas', [MasterDataController::class, 'getQuickFormulas']);

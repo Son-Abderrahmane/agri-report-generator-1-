@@ -129,7 +129,7 @@ class MasterDataController extends Controller
                         $cropId = $crop->id;
                     }
 
-                    Pesticide::updateOrCreate([
+                    $pesticide = Pesticide::firstOrCreate([
                         'product_name' => trim($productName),
                         'crop_name' => $cropName ? trim($cropName) : null,
                         'target_pest' => $targetPest ? trim($targetPest) : null,
@@ -142,7 +142,10 @@ class MasterDataController extends Controller
                         'registration_number' => $regNumber,
                         'valid_until' => $validUntil,
                     ]);
-                    $importedCount++;
+                    
+                    if ($pesticide->wasRecentlyCreated) {
+                        $importedCount++;
+                    }
                 }
             });
 
@@ -181,6 +184,12 @@ class MasterDataController extends Controller
     {
         Pesticide::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    public function deleteAllPesticides()
+    {
+        Pesticide::truncate();
+        return response()->json(['message' => 'Tous les produits ont été supprimés avec succès.']);
     }
 
     // --- Quick Formulas ---
