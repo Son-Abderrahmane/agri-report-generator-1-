@@ -78,7 +78,8 @@ class MasterDataController extends Controller
         }
 
         try {
-            $rows = \Spatie\SimpleExcel\SimpleExcelReader::create($path)->getRows();
+            $type = strtolower($extension);
+            $rows = \Spatie\SimpleExcel\SimpleExcelReader::create($path, $type)->getRows();
 
             $importedCount = 0;
             $rows->each(function(array $row) use (&$importedCount) {
