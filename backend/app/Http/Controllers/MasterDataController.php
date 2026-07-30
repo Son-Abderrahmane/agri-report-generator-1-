@@ -121,7 +121,7 @@ class MasterDataController extends Controller
                 $teneur = $normalizedRow['teneur'] ?? $normalizedRow['content'] ?? null;
                 $dosage = $normalizedRow['dose'] ?? $normalizedRow['dosage'] ?? $normalizedRow['dosedemploi'] ?? null;
                 $dar = $normalizedRow['dar'] ?? $normalizedRow['delaiavantrecolte'] ?? null;
-                $nbrApplication = $normalizedRow['nbrapplication'] ?? $normalizedRow['nombreapplication'] ?? $normalizedRow['nombreapplications'] ?? $normalizedRow['nbrapplications'] ?? null;
+                $nbrApplication = $normalizedRow['nbrapplication'] ?? $normalizedRow['nombreapplication'] ?? $normalizedRow['nombreapplications'] ?? $normalizedRow['nbrapplications'] ?? $normalizedRow['nbrdapplication'] ?? $normalizedRow['nbrdapplications'] ?? null;
                 
                 $holder = $normalizedRow['detenteur'] ?? $normalizedRow['societe'] ?? $normalizedRow['titulaire'] ?? $normalizedRow['malik'] ?? null;
                 $supplier = $normalizedRow['fournisseur'] ?? $normalizedRow['distributeur'] ?? $normalizedRow['mawrid'] ?? null;
