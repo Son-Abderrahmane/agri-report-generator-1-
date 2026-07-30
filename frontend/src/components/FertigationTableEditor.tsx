@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FertigationTable, FertigationRow } from '../types';
 import { Droplets, Plus, Trash2, Calculator, Gauge, Sparkles } from 'lucide-react';
 
@@ -11,6 +11,14 @@ export const FertigationTableEditor: React.FC<FertigationTableEditorProps> = ({
   table,
   onChange,
 }) => {
+  const [showEngine, setShowEngine] = useState(false);
+  const [engineData, setEngineData] = useState({
+    target: { N: 200, P: 50, K: 300, Ca: 150, Mg: 50, S: 50 },
+    water: { N: 10, P: 0, K: 5, Ca: 80, Mg: 20, S: 10 },
+    efficiency: 1.0
+  });
+  const [isCalculating, setIsCalculating] = useState(false);
+
   const handleTitleChange = (newTitle: string) => {
     onChange({
       ...table,
@@ -92,6 +100,74 @@ export const FertigationTableEditor: React.FC<FertigationTableEditorProps> = ({
   // Calculate sum total of weekly fertilizers
   const totalWeeklyKg = table.rows.reduce((sum, row) => sum + (parseFloat(row.weeklyTotal as any) || 0), 0);
 
+  const handleCalculate = async () => {
+    setIsCalculating(true);
+    try {
+      // @ts-ignore
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      const token = localStorage.getItem('agri_admin_token');
+      
+      const availableFertilizers = {
+        'Nitrate de Calcium (15.5-0-0-19Ca)': { N: 15.5, Ca: 19 },
+        'MAP (12-61-0)': { N: 12, P: 61 },
+        'Sulfate de Potassium (0-0-50-18S)': { K: 50, S: 18 },
+        'Nitrate de Potassium (13-0-46)': { N: 13, K: 46 },
+        'Sulfate de Magnésium (16MgO)': { Mg: 16, S: 13 },
+        'Acide Nitrique (59%)': { N: 13 }
+      };
+
+      const res = await fetch(`${API_BASE}/fertigation/calculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          target_requirements: engineData.target,
+          water_analysis: engineData.water,
+          efficiency: engineData.efficiency,
+          available_fertilizers: availableFertilizers
+        })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.tanks) {
+        // Build new rows based on Tanks
+        const newRows: FertigationRow[] = [];
+        let idCounter = Date.now();
+        
+        ['A', 'B', 'C'].forEach(tankName => {
+          const tankData = data.tanks[tankName];
+          if (tankData) {
+            Object.keys(tankData).forEach(fert => {
+              const amount = tankData[fert]; // assuming kg/ha/day
+              newRows.push({
+                id: `fer_${idCounter++}`,
+                fertilizer: `[Bac ${tankName}] ${fert}`,
+                dailyDose: amount,
+                weeklyTotal: Math.round(amount * 7 * 100) / 100,
+                roleDirectives: 'Calculé automatiquement',
+              });
+            });
+          }
+        });
+
+        onChange({
+          ...table,
+          rows: newRows
+        });
+        setShowEngine(false);
+      } else {
+        alert("Erreur de calcul.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Erreur de connexion au moteur de calcul.");
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-[#EBE9E1] p-5 sm:p-6 mb-6 transition-all hover:shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-[#EBE9E1] gap-2">
@@ -112,14 +188,59 @@ export const FertigationTableEditor: React.FC<FertigationTableEditorProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={handleAddRow}
-          className="flex items-center justify-center space-x-1.5 text-xs font-bold text-[#E9EDC9] bg-[#5A6352] hover:bg-[#344E41] px-3.5 py-2 rounded-xl shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Ajouter Engrais</span>
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setShowEngine(!showEngine)}
+            className="flex items-center justify-center space-x-1.5 text-xs font-bold text-[#344E41] bg-[#E9EDC9] hover:bg-[#CCD5AE] border border-[#CCD5AE] px-3.5 py-2 rounded-xl transition-all"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Moteur de Calcul</span>
+          </button>
+          <button
+            onClick={handleAddRow}
+            className="flex items-center justify-center space-x-1.5 text-xs font-bold text-[#E9EDC9] bg-[#5A6352] hover:bg-[#344E41] px-3.5 py-2 rounded-xl shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Ajouter Engrais</span>
+          </button>
+        </div>
       </div>
+
+      {showEngine && (
+        <div className="bg-[#F9F8F5] border border-[#CCD5AE] rounded-xl p-4 mb-4">
+          <h4 className="text-sm font-bold text-[#344E41] mb-3 flex items-center"><Calculator className="w-4 h-4 mr-1"/> Configuration Hydrobuddy</h4>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <h5 className="text-xs font-bold mb-2">Besoins Cibles (mg/L ou ppm)</h5>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.keys(engineData.target).map(el => (
+                  <div key={`t_${el}`}>
+                    <label className="text-[10px] text-gray-500 font-bold">{el}</label>
+                    <input type="number" value={(engineData.target as any)[el]} onChange={e => setEngineData({...engineData, target: {...engineData.target, [el]: parseFloat(e.target.value)||0}})} className="w-full border rounded p-1 text-xs" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h5 className="text-xs font-bold mb-2">Analyse d'Eau (mg/L ou ppm)</h5>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.keys(engineData.water).map(el => (
+                  <div key={`w_${el}`}>
+                    <label className="text-[10px] text-gray-500 font-bold">{el}</label>
+                    <input type="number" value={(engineData.water as any)[el]} onChange={e => setEngineData({...engineData, water: {...engineData.water, [el]: parseFloat(e.target.value)||0}})} className="w-full border rounded p-1 text-xs" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <button onClick={handleCalculate} disabled={isCalculating} className="bg-[#344E41] text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center">
+               {isCalculating ? 'Calcul en cours...' : 'Générer Programme Optimal'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Target Parameters Bar (EC & pH) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 bg-[#F9F8F5] p-3.5 rounded-2xl border border-[#EBE9E1]">

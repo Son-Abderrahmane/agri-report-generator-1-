@@ -28,6 +28,37 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     'Authorization': `Bearer ${token}`
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/pesticides/import`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || 'Importation réussie');
+        fetchData();
+      } else {
+        alert(`Erreur: ${data.error || 'Erreur inconnue'}`);
+      }
+    } catch (err) {
+      alert('Erreur lors de l\'importation');
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -175,12 +206,21 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-[#344E41]">Registre des Produits</h3>
-                <button 
-                  onClick={() => setEditingPesticide({ product_name: '' })}
-                  className="bg-[#A3B18A] text-[#344E41] px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1"
-                >
-                  <Plus className="w-4 h-4"/> <span>Nouveau Produit</span>
-                </button>
+                <div className="flex space-x-2">
+                  <input type="file" accept=".xlsx,.xls,.csv" className="hidden" ref={fileInputRef} onChange={handleImportExcel} />
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-[#E9EDC9] text-[#344E41] border border-[#CCD5AE] px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1"
+                  >
+                    <span>Importer Excel</span>
+                  </button>
+                  <button 
+                    onClick={() => setEditingPesticide({ product_name: '' })}
+                    className="bg-[#A3B18A] text-[#344E41] px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1"
+                  >
+                    <Plus className="w-4 h-4"/> <span>Nouveau Produit</span>
+                  </button>
+                </div>
               </div>
 
               {editingPesticide && (

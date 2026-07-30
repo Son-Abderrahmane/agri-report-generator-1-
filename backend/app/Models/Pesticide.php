@@ -11,6 +11,7 @@ class Pesticide extends Model
         'crop_name',
         'target_pest',
         'product_name',
+        'active_ingredient',
         'holder',
         'supplier',
         'registration_number',

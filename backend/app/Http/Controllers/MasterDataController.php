@@ -60,6 +60,60 @@ class MasterDataController extends Controller
         return response()->json($pesticide, 201);
     }
 
+    public function importPesticides(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv'
+        ]);
+
+        $path = $request->file('file')->getRealPath();
+
+        if (!class_exists('\Spatie\SimpleExcel\SimpleExcelReader')) {
+            return response()->json(['error' => 'Please install spatie/simple-excel via composer.'], 500);
+        }
+
+        $rows = \Spatie\SimpleExcel\SimpleExcelReader::create($path)->getRows();
+
+        $importedCount = 0;
+        $rows->each(function(array $row) use (&$importedCount) {
+            $cropName = $row['Culture'] ?? $row['culture'] ?? null;
+            $productName = $row['Produits'] ?? $row['produits'] ?? $row['Produit'] ?? null;
+            $targetPest = $row['Cible'] ?? $row['cible'] ?? null;
+            $activeIngredient = $row['Matière Active'] ?? $row['matiere_active'] ?? $row['Active Ingredient'] ?? null;
+            $dosage = $row['Dosage'] ?? $row['dosage'] ?? null;
+            
+            $holder = $row['Détenteur'] ?? $row['detenteur'] ?? null;
+            $supplier = $row['Fournisseur'] ?? $row['fournisseur'] ?? null;
+            $regNumber = $row['Numéro homologation'] ?? $row['numero_homologation'] ?? null;
+            $validUntil = $row['Valable jusqu\'au'] ?? $row['valable_jusqu_au'] ?? null;
+
+            if ($productName) {
+                $cropId = null;
+                if ($cropName) {
+                    $crop = \App\Models\Crop::firstOrCreate(['name' => trim($cropName)]);
+                    $cropId = $crop->id;
+                }
+
+                Pesticide::updateOrCreate([
+                    'product_name' => trim($productName),
+                    'crop_name' => $cropName ? trim($cropName) : null,
+                    'target_pest' => $targetPest ? trim($targetPest) : null,
+                ], [
+                    'crop_id' => $cropId,
+                    'active_ingredient' => $activeIngredient,
+                    'dosage' => $dosage,
+                    'holder' => $holder,
+                    'supplier' => $supplier,
+                    'registration_number' => $regNumber,
+                    'valid_until' => $validUntil,
+                ]);
+                $importedCount++;
+            }
+        });
+
+        return response()->json(['message' => "Imported {$importedCount} pesticides successfully."]);
+    }
+
     public function updatePesticide(Request $request, $id)
     {
         $pesticide = Pesticide::findOrFail($id);

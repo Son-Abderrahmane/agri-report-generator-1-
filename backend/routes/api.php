@@ -31,7 +31,10 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::put('/reports/{id}', [ReportController::class, 'update']);
     Route::post('/reports/{id}/duplicate', [ReportController::class, 'duplicate']);
     Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
-    Route::post('/upload', [ReportController::class, 'upload']);
+    Route::post('/upload', [\App\Http\Controllers\ReportController::class, 'upload']);
+    
+    // Fertigation Engine
+    Route::post('/fertigation/calculate', [\App\Http\Controllers\FertigationController::class, 'calculate']);
 
     // Master Data Routes
     Route::get('/crops', [MasterDataController::class, 'getCrops']);
@@ -40,6 +43,7 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::delete('/crops/{id}', [MasterDataController::class, 'destroyCrop']);
 
     Route::get('/pesticides', [MasterDataController::class, 'getPesticides']);
+    Route::post('/pesticides/import', [MasterDataController::class, 'importPesticides']);
     Route::post('/pesticides', [MasterDataController::class, 'storePesticide']);
     Route::put('/pesticides/{id}', [MasterDataController::class, 'updatePesticide']);
     Route::delete('/pesticides/{id}', [MasterDataController::class, 'destroyPesticide']);

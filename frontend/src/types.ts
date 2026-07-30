@@ -142,6 +142,7 @@ export interface Pesticide {
   crop_name?: string;
   target_pest?: string;
   product_name: string;
+  active_ingredient?: string;
   holder?: string;
   supplier?: string;
   registration_number?: string;

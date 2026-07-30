@@ -5,13 +5,22 @@ import { Shield, Plus, Trash2, Edit2, AlertCircle } from 'lucide-react';
 interface PhytosanitaryTableEditorProps {
   table: PhytosanitaryTable;
   onChange: (updated: PhytosanitaryTable) => void;
+  cropType?: string;
 }
 
 export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> = ({
   table,
   onChange,
+  cropType,
 }) => {
   const [pesticides, setPesticides] = useState<Pesticide[]>([]);
+  const [selectedCrop, setSelectedCrop] = useState<string>(cropType || '');
+
+  useEffect(() => {
+    if (cropType && !selectedCrop) {
+      setSelectedCrop(cropType);
+    }
+  }, [cropType]);
 
   useEffect(() => {
     // @ts-ignore
@@ -27,7 +36,15 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
       .catch(err => console.error(err));
   }, []);
 
-  const uniqueTargets = Array.from(new Set(pesticides.map(p => p.target_pest).filter(Boolean))) as string[];
+  const uniqueCrops = Array.from(new Set(pesticides.map(p => p.crop_name).filter(Boolean))) as string[];
+  const uniqueTargets = Array.from(
+    new Set(
+      pesticides
+        .filter(p => !selectedCrop || p.crop_name === selectedCrop)
+        .map(p => p.target_pest)
+        .filter(Boolean)
+    )
+  ) as string[];
 
   const handleTitleChange = (newTitle: string) => {
     onChange({
@@ -56,9 +73,8 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
       row.id === id ? { ...row, [field]: value } : row
     );
 
-    // If product changed, auto-fill dosage
     if (field === 'product') {
-      const selectedPesticide = pesticides.find(p => p.product_name === value);
+      const selectedPesticide = pesticides.find(p => `${p.product_name} (${p.active_ingredient || 'N/A'})` === value || p.product_name === value);
       if (selectedPesticide && selectedPesticide.dosage) {
         updatedRows = updatedRows.map((row) =>
           row.id === id ? { ...row, doseHa: selectedPesticide.dosage as string } : row
@@ -106,13 +122,24 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
           </div>
         </div>
 
-        <button
-          onClick={handleAddRow}
-          className="flex items-center justify-center space-x-1.5 text-xs font-bold text-[#E9EDC9] bg-[#5A6352] hover:bg-[#344E41] px-3.5 py-2 rounded-xl shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Ajouter un Produit</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <select
+            value={selectedCrop}
+            onChange={(e) => setSelectedCrop(e.target.value)}
+            className="text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
+          >
+            <option value="">Filtre Culture (Toutes)</option>
+            {uniqueCrops.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          <button
+            onClick={handleAddRow}
+            className="flex items-center justify-center space-x-1.5 text-xs font-bold text-[#E9EDC9] bg-[#5A6352] hover:bg-[#344E41] px-3.5 py-2 rounded-xl shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Ajouter un Produit</span>
+          </button>
+        </div>
       </div>
 
       {/* Dynamic Table Responsive Wrapper */}
@@ -169,12 +196,16 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                       className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
                       disabled={!row.target}
                     >
-                      <option value="">Sélectionner Produit...</option>
-                      {pesticides.filter(p => p.target_pest === row.target).map(p => (
-                        <option key={p.id} value={p.product_name}>{p.product_name}</option>
-                      ))}
+                      <option value="">Sélectionner Produit/Matière Active...</option>
+                      {pesticides
+                        .filter(p => p.target_pest === row.target && (!selectedCrop || p.crop_name === selectedCrop))
+                        .map(p => {
+                           const displayName = `${p.product_name} (${p.active_ingredient || 'N/A'})`;
+                           return <option key={p.id} value={displayName}>{displayName}</option>;
+                        })
+                      }
                     </select>
-                    {!pesticides.find(p => p.product_name === row.product && p.target_pest === row.target) && row.product && (
+                    {!pesticides.find(p => `${p.product_name} (${p.active_ingredient || 'N/A'})` === row.product || p.product_name === row.product) && row.product && (
                       <input 
                         type="text" 
                         value={row.product} 
