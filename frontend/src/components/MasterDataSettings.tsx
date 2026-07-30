@@ -12,6 +12,8 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
   const [isLoading, setIsLoading] = useState(false);
   const [showImportZone, setShowImportZone] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterCulture, setFilterCulture] = useState('');
 
   // States
   const [crops, setCrops] = useState<Crop[]>([]);
@@ -252,7 +254,22 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
           {activeTab === 'pesticides' && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-[#344E41]">Registre des Produits</h3>
+                <div className="flex items-center space-x-4">
+                  <h3 className="text-lg font-bold text-[#344E41]">Registre des Produits</h3>
+                  <select 
+                    value={filterCulture}
+                    onChange={(e) => {
+                      setFilterCulture(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="border border-[#CCD5AE] rounded-lg px-2 py-1 text-sm text-[#344E41] bg-white focus:outline-none focus:border-[#A3B18A]"
+                  >
+                    <option value="">Toutes les cultures</option>
+                    {uniquePesticideCrops.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="flex space-x-2">
                   <input type="file" accept=".xlsx,.xls,.csv" className="hidden" ref={fileInputRef} onChange={onFileInputChange} />
                   
@@ -359,6 +376,28 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                   </tbody>
                 </table>
               </div>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-4 space-x-2">
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 rounded-md border border-[#CCD5AE] text-[#344E41] disabled:opacity-50"
+                  >
+                    Précédent
+                  </button>
+                  <span className="px-3 py-1 text-[#344E41] font-medium">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 rounded-md border border-[#CCD5AE] text-[#344E41] disabled:opacity-50"
+                  >
+                    Suivant
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

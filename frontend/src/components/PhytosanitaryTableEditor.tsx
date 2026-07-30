@@ -14,6 +14,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
   cropType,
 }) => {
   const [pesticides, setPesticides] = useState<Pesticide[]>([]);
+  const [dbCrops, setDbCrops] = useState<{id: number, name: string}[]>([]);
   const [selectedCrop, setSelectedCrop] = useState<string>(cropType || '');
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
     // @ts-ignore
     const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
     const token = localStorage.getItem('agri_admin_token');
+    
     fetch(`${API_BASE}/pesticides`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -34,9 +36,21 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
         if (Array.isArray(data)) setPesticides(data);
       })
       .catch(err => console.error(err));
+
+    fetch(`${API_BASE}/crops`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setDbCrops(data);
+      })
+      .catch(err => console.error(err));
   }, []);
 
-  const uniqueCrops = Array.from(new Set(pesticides.map(p => p.crop_name).filter(Boolean))) as string[];
+  const pesticideCrops = Array.from(new Set(pesticides.map(p => p.crop_name).filter(Boolean))) as string[];
+  const dbCropNames = dbCrops.map(c => c.name);
+  const uniqueCrops = Array.from(new Set([...pesticideCrops, ...dbCropNames])).sort();
+
   const uniqueTargets = Array.from(
     new Set(
       pesticides
@@ -44,7 +58,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
         .map(p => p.target_pest)
         .filter(Boolean)
     )
-  ) as string[];
+  ).sort() as string[];
 
   const handleTitleChange = (newTitle: string) => {
     onChange({
