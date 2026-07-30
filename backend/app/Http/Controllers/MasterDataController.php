@@ -99,6 +99,15 @@ class MasterDataController extends Controller
                         mb_strtolower(trim($key))
                     );
                     $normKey = preg_replace('/[^a-z0-9]/', '', $cleanKey);
+                    
+                    // Handle dynamic export numbers like "Produits (92)"
+                    if (str_starts_with($normKey, 'produit')) {
+                        $normalizedRow['produit'] = $value;
+                    }
+                    if (str_starts_with($normKey, 'culture')) {
+                        $normalizedRow['culture'] = $value;
+                    }
+                    
                     $normalizedRow[$normKey] = $value;
                 }
 
