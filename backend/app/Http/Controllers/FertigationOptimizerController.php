@@ -140,7 +140,7 @@ class FertigationOptimizerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'crop_id' => 'required|integer'
+            'crop_id' => 'nullable|integer'
         ]);
         $sa = SoilAnalysis::create($request->all());
         return response()->json($sa, 201);
