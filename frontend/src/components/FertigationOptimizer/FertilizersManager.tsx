@@ -30,9 +30,7 @@ export const FertilizersManager: React.FC<FertilizersManagerProps> = ({ apiBase,
     } catch (e) {
       console.error(e);
     }
-    } catch (e) {
-      console.error(e);
-    }
+
     setIsLoading(false);
   };
 
