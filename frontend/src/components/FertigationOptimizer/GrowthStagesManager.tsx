@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OptimizerGrowthStage } from '../../types';
+import { confirmAlert } from '../../utils/confirm';
 import { Plus, Sprout, Trash2 } from 'lucide-react';
 import { GrowthStageFormModal } from './GrowthStageFormModal';
 
@@ -53,7 +54,7 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Supprimer ce stade ?")) return;
+    if (!(await confirmAlert("Supprimer ce stade ?"))) return;
     try {
       await fetch(`${apiBase}/optimizer/growth-stages/${id}`, {
         method: 'DELETE',

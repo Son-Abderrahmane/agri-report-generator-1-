@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Crop, Pesticide, QuickFormula, EvaluationTemplate, RecommendationCategory } from '../types';
 import { Settings, Save, Plus, Trash2, Edit2, ShieldAlert, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from '../utils/toast';
+import { confirmAlert } from '../utils/confirm';
 
 interface MasterDataSettingsProps {
   apiBase: string;
@@ -134,7 +135,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     } catch (e) { console.error(e); }
   };
   const handleDeleteCrop = async (id: number) => {
-    if (!window.confirm('Supprimer cette culture ?')) return;
+    if (!(await confirmAlert('Supprimer cette culture ?'))) return;
     await fetch(`${apiBase}/crops/${id}`, { method: 'DELETE', headers });
     fetchData();
   };
@@ -153,13 +154,13 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     fetchData();
   };
   const handleDeletePesticide = async (id: number) => {
-    if (!window.confirm('Supprimer ce produit ?')) return;
+    if (!(await confirmAlert('Supprimer ce produit ?'))) return;
     await fetch(`${apiBase}/pesticides/${id}`, { method: 'DELETE', headers });
     fetchData();
   };
 
   const handleDeleteAllPesticides = async () => {
-    if (!window.confirm('ATTENTION: Voulez-vous vraiment supprimer TOUS les produits phytosanitaires ? Cette action est irréversible.')) return;
+    if (!(await confirmAlert('ATTENTION: Voulez-vous vraiment supprimer TOUS les produits phytosanitaires ? Cette action est irréversible.'))) return;
     setIsLoading(true);
     try {
       const res = await fetch(`${apiBase}/pesticides/all`, { method: 'DELETE', headers });
@@ -191,7 +192,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     fetchData();
   };
   const handleDeleteFormula = async (id: number) => {
-    if (!window.confirm('Supprimer cette formule ?')) return;
+    if (!(await confirmAlert('Supprimer cette formule ?'))) return;
     await fetch(`${apiBase}/quick-formulas/${id}`, { method: 'DELETE', headers });
     fetchData();
   };
@@ -210,7 +211,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     fetchData();
   };
   const handleDeleteEval = async (id: number) => {
-    if (!window.confirm('Supprimer cette évaluation ?')) return;
+    if (!(await confirmAlert('Supprimer cette évaluation ?'))) return;
     await fetch(`${apiBase}/evaluation-templates/${id}`, { method: 'DELETE', headers });
     fetchData();
   };
@@ -231,7 +232,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     } catch (e) { console.error(e); }
   };
   const handleDeleteCategory = async (id: number) => {
-    if (!window.confirm('Supprimer cette catégorie ?')) return;
+    if (!(await confirmAlert('Supprimer cette catégorie ?'))) return;
     await fetch(`${apiBase}/recommendation-categories/${id}`, { method: 'DELETE', headers });
     fetchData();
   };

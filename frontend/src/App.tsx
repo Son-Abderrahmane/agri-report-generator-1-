@@ -18,6 +18,7 @@ import { Login } from './components/Login';
 import { MasterDataSettings } from './components/MasterDataSettings';
 import { OptimizerLayout } from './components/FertigationOptimizer/OptimizerLayout';
 import { CheckCircle, AlertCircle, Save, FileText, Download } from 'lucide-react';
+import { confirmAlert, resolveConfirm } from './utils/confirm';
 
 // @ts-ignore
 let API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
@@ -40,6 +41,7 @@ export default function App() {
   const [reportsList, setReportsList] = useState<Report[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<{isOpen: boolean, message: string}>({isOpen: false, message: ''});
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem('agri_admin_token'));
 
@@ -55,10 +57,15 @@ export default function App() {
         showToast(customEvent.detail);
       }
     };
+    const handleConfirmEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setConfirmState({ isOpen: true, message: customEvent.detail });
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     window.addEventListener('app-toast', handleToastEvent);
+    window.addEventListener('app-confirm', handleConfirmEvent);
 
     if (navigator.onLine) {
       syncOfflineReports();
@@ -68,6 +75,7 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('app-toast', handleToastEvent);
+      window.removeEventListener('app-confirm', handleConfirmEvent);
     };
   }, []);
 
@@ -282,7 +290,7 @@ export default function App() {
   };
 
   const handleDeleteReport = async (id: string) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce rapport ?')) return;
+    if (!(await confirmAlert('Êtes-vous sûr de vouloir supprimer ce rapport ?'))) return;
 
     try {
       await fetch(`${API_BASE}/reports/${id}`, { 
@@ -330,6 +338,36 @@ export default function App() {
         <div className="fixed bottom-5 right-5 z-50 bg-[#344E41] text-[#E9EDC9] text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl border border-[#A3B18A]/40 flex items-center space-x-2 animate-bounce">
           <CheckCircle className="w-4 h-4 text-[#A3B18A]" />
           <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Global Confirm Modal */}
+      {confirmState.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-[#344E41] mb-2">Confirmation Requise</h3>
+              <p className="text-sm text-[#5A6352] mb-6 px-2">{confirmState.message}</p>
+              
+              <div className="flex justify-center space-x-3 w-full">
+                <button 
+                  onClick={() => { setConfirmState({isOpen: false, message: ''}); resolveConfirm(false); }}
+                  className="flex-1 px-4 py-2 bg-[#F7F6F2] text-[#5A6352] text-sm font-bold rounded-xl border border-[#EBE9E1] hover:bg-gray-100 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={() => { setConfirmState({isOpen: false, message: ''}); resolveConfirm(true); }}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-red-700 transition-colors"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

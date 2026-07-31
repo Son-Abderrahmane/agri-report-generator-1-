@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OptimizerSoilAnalysis } from '../../types';
+import { confirmAlert } from '../../utils/confirm';
 import { Plus, Edit2, Trash2, Layers } from 'lucide-react';
 import { SoilAnalysisFormModal } from './SoilAnalysisFormModal';
 
@@ -58,7 +59,7 @@ export const SoilAnalysisManager: React.FC<SoilAnalysisManagerProps> = ({ apiBas
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Supprimer cette analyse ?")) return;
+    if (!(await confirmAlert("Supprimer cette analyse ?"))) return;
     try {
       await fetch(`${apiBase}/optimizer/soil-analyses/${id}`, {
         method: 'DELETE',

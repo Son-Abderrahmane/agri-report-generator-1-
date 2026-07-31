@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OptimizerFertilizer } from '../../types';
+import { confirmAlert } from '../../utils/confirm';
 import { Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 import { FertilizerFormModal } from './FertilizerFormModal';
 
@@ -60,7 +61,7 @@ export const FertilizersManager: React.FC<FertilizersManagerProps> = ({ apiBase,
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Supprimer cet engrais ?")) return;
+    if (!(await confirmAlert("Supprimer cet engrais ?"))) return;
     try {
       await fetch(`${apiBase}/optimizer/fertilizers/${id}`, {
         method: 'DELETE',
