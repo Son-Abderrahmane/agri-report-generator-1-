@@ -3,11 +3,13 @@ import { OptimizerGrowthStage, GrowthStageRecipe, GrowthStageTarget } from '../.
 import { X, Save, Plus, Trash2 } from 'lucide-react';
 
 interface GrowthStageFormModalProps {
+  apiBase: string;
+  token: string;
   onClose: () => void;
   onSave: (stage: Partial<OptimizerGrowthStage>) => void;
 }
 
-export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ onClose, onSave }) => {
+export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ apiBase, token, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<OptimizerGrowthStage>>({
     name: '',
     crop_id: 1, // Default crop
@@ -18,6 +20,28 @@ export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ onCl
     target_ph_max: 6.5,
     order_index: 1,
   });
+
+  const [crops, setCrops] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    const fetchCrops = async () => {
+      try {
+        const res = await fetch(`${apiBase}/crops`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCrops(data);
+          if (data.length > 0 && formData.crop_id === 1) {
+            setFormData(prev => ({ ...prev, crop_id: data[0].id }));
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchCrops();
+  }, [apiBase, token]);
 
   const [targets, setTargets] = useState<{ nutrient: string; target_ppm: number }[]>([
     { nutrient: 'n', target_ppm: 150 },
@@ -82,9 +106,21 @@ export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ onCl
             <h4 className="text-xs font-bold text-[#344E41] uppercase tracking-wider mb-3 pb-1 border-b border-gray-100">Informations Générales</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1">Culture *</label>
+                <select required value={formData.crop_id || ''} onChange={e => handleStageChange('crop_id', parseInt(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]">
+                  {crops.length === 0 && <option value="">Aucune culture disponible</option>}
+                  {crops.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">Nom du stade *</label>
                 <input required type="text" placeholder="Ex: Végétatif Semaine 1-3" value={formData.name || ''} onChange={e => handleStageChange('name', e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
               </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">Durée (jours)</label>
                 <input type="number" value={formData.duration_days || ''} onChange={e => handleStageChange('duration_days', parseInt(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />

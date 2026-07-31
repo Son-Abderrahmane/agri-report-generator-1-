@@ -117,7 +117,7 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
       )}
 
       {isModalOpen && (
-        <GrowthStageFormModal onClose={() => setIsModalOpen(false)} onSave={handleSave} />
+        <GrowthStageFormModal apiBase={apiBase} token={token} onClose={() => setIsModalOpen(false)} onSave={handleSave} />
       )}
     </div>
   );
