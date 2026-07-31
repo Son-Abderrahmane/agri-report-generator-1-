@@ -54,6 +54,17 @@ export const FertilizerFormModal: React.FC<FertilizerFormModalProps> = ({ fertil
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">Unité (ex: kg, L)</label>
+              <input type="text" value={formData.unit || 'kg'} onChange={e => handleChange('unit', e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">Prix Unitaire (DH)</label>
+              <input type="number" step="0.01" value={formData.price_per_unit || ''} onChange={e => handleChange('price_per_unit', parseFloat(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
+            </div>
+          </div>
+
           <div>
             <h4 className="text-xs font-bold text-[#344E41] uppercase tracking-wider mb-3 pb-1 border-b border-gray-100">Macronutriments (%)</h4>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
