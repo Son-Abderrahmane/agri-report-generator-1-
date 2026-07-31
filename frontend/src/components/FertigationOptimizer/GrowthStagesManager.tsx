@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OptimizerGrowthStage } from '../../types';
-import { Plus, Sprout } from 'lucide-react';
+import { Plus, Sprout, Trash2 } from 'lucide-react';
+import { GrowthStageFormModal } from './GrowthStageFormModal';
 
 interface GrowthStagesManagerProps {
   apiBase: string;
@@ -10,6 +11,7 @@ interface GrowthStagesManagerProps {
 export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBase, token }) => {
   const [stages, setStages] = useState<OptimizerGrowthStage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchStages();
@@ -27,7 +29,40 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
     } catch (e) {
       console.error(e);
     }
+
     setIsLoading(false);
+  };
+
+  const handleSave = async (stage: Partial<OptimizerGrowthStage>) => {
+    try {
+      const res = await fetch(`${apiBase}/optimizer/growth-stages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(stage)
+      });
+      if (res.ok) {
+        setIsModalOpen(false);
+        fetchStages();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Supprimer ce stade ?")) return;
+    try {
+      await fetch(`${apiBase}/optimizer/growth-stages/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchStages();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -37,7 +72,7 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
           <Sprout className="w-5 h-5 text-[#344E41]" />
           <h4 className="font-bold text-[#344E41] font-serif">Stades Végétatifs & Recettes</h4>
         </div>
-        <button className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#D4A373] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[#c29363]">
+        <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#D4A373] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[#c29363]">
           <Plus className="w-4 h-4" />
           <span>Nouveau Stade</span>
         </button>
@@ -54,8 +89,13 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
           ) : (
             stages.map((stage, idx) => (
               <div key={stage.id} className="bg-white p-4 rounded-xl shadow-sm border border-[#EBE9E1]">
-                <h5 className="font-bold text-[#344E41]">Etape {idx + 1} : {stage.name}</h5>
-                <p className="text-xs text-gray-500 mb-3">{stage.duration_days} jours | EC: {stage.target_ec_min}-{stage.target_ec_max} | pH: {stage.target_ph_min}-{stage.target_ph_max}</p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="font-bold text-[#344E41]">Etape {idx + 1} : {stage.name}</h5>
+                    <p className="text-xs text-gray-500 mb-3">{stage.duration_days} jours | EC: {stage.target_ec_min}-{stage.target_ec_max} | pH: {stage.target_ph_min}-{stage.target_ph_max}</p>
+                  </div>
+                  <button onClick={() => handleDelete(stage.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 className="w-4 h-4"/></button>
+                </div>
                 <div className="pl-4 border-l-2 border-[#E9EDC9]">
                   {stage.recipes && stage.recipes.map(recipe => (
                     <div key={recipe.id} className="mb-2">
@@ -74,6 +114,10 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
             ))
           )}
         </div>
+      )}
+
+      {isModalOpen && (
+        <GrowthStageFormModal onClose={() => setIsModalOpen(false)} onSave={handleSave} />
       )}
     </div>
   );
