@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
 import { Report } from '../types';
+import { generatePDF } from '../services/pdf/PdfRenderer';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
 import { 
@@ -16,6 +16,7 @@ import {
   Loader2,
   FileCheck
 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 
 interface ReportPDFViewProps {
   report: Report;
@@ -33,104 +34,29 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
     if (!reportRef.current) return;
     setIsGenerating(true);
     try {
-      const element = reportRef.current;
-
-      // Temporarily bypass viewport constraints for html-to-image
-      const originalStyle = element.style.cssText;
-      const parent = element.parentElement;
-      const originalParentStyle = parent ? parent.style.cssText : '';
-      
-      element.style.position = 'absolute';
-      element.style.left = '0';
-      element.style.top = '0';
-      element.style.width = '210mm';
-      element.style.maxWidth = '210mm';
-      element.style.transform = 'scale(1)';
-      
-      if (parent) {
-        parent.style.overflow = 'visible';
-        parent.style.width = 'auto';
-      }
-
-      // Use html-to-image which renders via SVG foreignObject in browser natively, avoiding html2canvas oklab parsing errors
-      let imgData = '';
-      try {
-        imgData = await toPng(element, {
-          quality: 0.95,
-          pixelRatio: 2,
-          backgroundColor: '#ffffff',
-          cacheBust: false,
-          style: {
-            transform: 'none'
-          }
-        });
-      } catch (firstErr) {
-        console.warn('First attempt with toPng failed, retrying with skipFonts: true', firstErr);
-        imgData = await toPng(element, {
-          quality: 0.95,
-          pixelRatio: 2,
-          backgroundColor: '#ffffff',
-          skipFonts: true,
-          style: {
-            transform: 'none'
-          }
-        });
-      }
-
-      // Revert styles immediately after capture
-      element.style.cssText = originalStyle;
-      if (parent) {
-        parent.style.cssText = originalParentStyle;
-      }
-
-      if (!imgData) {
-        throw new Error('Image data generation returned empty result');
-      }
-
-      // Load image dimensions
-      const img = new Image();
-      img.src = imgData;
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-      });
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth;
-      const imgHeight = (img.height * pdfWidth) / img.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Page 1
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      // Extra pages if document spans multiple A4 heights
-      while (heightLeft > 3) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-
       const cleanTitle = (report.farmDetails?.reportRef || 'Rapport-Agronomique')
         .replace(/[^a-zA-Z0-9_\-]/g, '_');
       const cleanDate = (report.farmDetails?.visitDate || '2026').replace(/[^0-9\-]/g, '');
       const fileName = `${cleanTitle}_${cleanDate}.pdf`;
 
-      pdf.save(fileName);
+      // Bypass temporaire des restrictions de hauteur pour capture correcte des dimensions DOM
+      const element = reportRef.current;
+      const originalStyle = element.style.cssText;
+      element.style.position = 'absolute';
+      element.style.left = '0';
+      element.style.top = '0';
+      element.style.width = '210mm';
+      element.style.maxWidth = '210mm';
+      element.style.height = 'auto'; // Laisser la hauteur naturelle
+
+      // Appel au nouveau moteur de rendu modulaire
+      await generatePDF(element, fileName);
+
+      element.style.cssText = originalStyle;
+
     } catch (err) {
       console.error('PDF Generation Error:', err);
-      alert('La génération directe a échoué. L\'outil d\'impression va s\'ouvrir pour enregistrer en PDF.');
-      handlePrint();
+      alert('La génération directe a échoué. Veuillez vérifier la console.');
     } finally {
       setIsGenerating(false);
     }
@@ -171,6 +97,11 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
               body { padding: 0; margin: 0; }
               @page { size: A4; margin: 8mm; }
               .no-print { display: none !important; }
+              table { break-inside: auto; page-break-inside: auto; }
+              thead { display: table-header-group; }
+              tfoot { display: table-footer-group; }
+              tr { break-inside: avoid; page-break-inside: avoid; }
+              .card, .section, .chart, .recommendation, .fertigation-card { break-inside: avoid; page-break-inside: avoid; }
             }
           </style>
         </head>
@@ -270,7 +201,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
           className="bg-white text-[#3D3D3D] p-6 sm:p-10 shadow-xl rounded-2xl border border-[#EBE9E1] w-[210mm] min-w-[210mm] mx-auto text-xs font-sans leading-normal print:p-0 print:shadow-none print:border-none print:m-0"
         >
         {/* 1. Header Banner */}
-        <header className="border-b-4 border-[#344E41] pb-4 mb-6">
+        <header data-pdf-block="true" className="border-b-4 border-[#344E41] pb-4 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[11px] font-black tracking-widest text-[#5A6352] uppercase">
@@ -296,7 +227,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
         </header>
 
         {/* 2. General Information & Farm Details */}
-        <section className="mb-6">
+        <section data-pdf-block="true" className="mb-6 section">
           <div className="bg-[#F9F8F5] border border-[#EBE9E1] rounded-2xl p-3.5 sm:p-4">
             <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-2.5 border-b border-[#EBE9E1] pb-1">
               Informations Générales & Exploitation
@@ -356,7 +287,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 
         {/* 3. Diagnostic Summary */}
         {diagnosticSummary && (
-          <section className="mb-6">
+          <section data-pdf-block="true" className="mb-6 section">
             <div className="bg-[#E9EDC9]/60 border-l-4 border-[#344E41] p-3.5 rounded-r-2xl">
               <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-1">
                 Bilan Diagnostic & Synthèse Hebdomadaire
@@ -370,7 +301,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 
         {/* 4. Phytosanitary Observations & Photos */}
         {observations && observations.length > 0 && (
-          <section className="mb-6">
+          <section data-pdf-block="true" className="mb-6 section">
             <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-3 pb-1 border-b-2 border-[#344E41]">
               Observations Phytosanitaires & Photos Terrain
             </h3>
@@ -433,13 +364,13 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 
         {/* 5. Phytosanitary Treatment Program Table */}
         {phytosanitaryTable && phytosanitaryTable.rows.length > 0 && (
-          <section className="mb-6">
-            <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-2 pb-1 border-b-2 border-[#344E41]">
+          <section className="mb-6 section">
+            <h3 data-pdf-block="true" className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-2 pb-1 border-b-2 border-[#344E41]">
               {phytosanitaryTable.title || 'Programme de Traitement Phytosanitaire'}
             </h3>
 
             <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1]">
-              <thead>
+              <thead data-pdf-thead="true">
                 <tr className="bg-[#344E41] text-[#E9EDC9] font-bold">
                   <th className="p-2 border border-[#344E41]">Cible / Problème</th>
                   <th className="p-2 border border-[#344E41]">Matière Active</th>
@@ -452,7 +383,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
               </thead>
               <tbody className="divide-y divide-[#EBE9E1]">
                 {phytosanitaryTable.rows.map((row) => (
-                  <tr key={row.id} className="even:bg-[#F9F8F5]">
+                  <tr data-pdf-tr="true" key={row.id} className="even:bg-[#F9F8F5]">
                     <td className="p-2 border border-[#EBE9E1] font-bold text-[#344E41]">{row.target}</td>
                     <td className="p-2 border border-[#EBE9E1] text-[#5A6352]">{row.activeIngredient || '-'}</td>
                     <td className="p-2 border border-[#EBE9E1] font-semibold text-[#3D3D3D]">{row.product}</td>
@@ -469,14 +400,14 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 
         {/* 6. Fertigation Program Table (Optimized) */}
         {optimizationResults && (
-          <section className="mb-6 page-break-inside-avoid">
-            <div className="flex items-center justify-between mb-2 pb-1 border-b-2 border-[#344E41]">
+          <section className="mb-6 section page-break-inside-avoid">
+            <div data-pdf-block="true" className="flex items-center justify-between mb-2 pb-1 border-b-2 border-[#344E41]">
               <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider">
                 Programme Hebdomadaire de Fertigation Optimisé
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div data-pdf-block="true" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Doses Requises (kg)</h5>
                 <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1]">
@@ -520,7 +451,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
               </div>
             </div>
 
-            <div>
+            <div data-pdf-block="true">
               <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Couverture Nutritionnelle (PPM)</h5>
               <div className="grid grid-cols-6 gap-2">
                 {['n', 'p', 'k', 'ca', 'mg', 's'].map(n => {
@@ -553,12 +484,12 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 
         {/* 7. Custom Tables */}
         {customTables && customTables.length > 0 && customTables.map((ct) => (
-          <section key={ct.id} className="mb-6">
-            <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-2 pb-1 border-b-2 border-[#344E41]">
+          <section key={ct.id} className="mb-6 section">
+            <h3 data-pdf-block="true" className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-2 pb-1 border-b-2 border-[#344E41]">
               {ct.title}
             </h3>
             <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1]">
-              <thead>
+              <thead data-pdf-thead="true">
                 <tr className="bg-[#344E41] text-[#E9EDC9] font-bold">
                   {ct.columns.map((col) => (
                     <th key={col.id} className="p-2 border border-[#344E41]">{col.label}</th>
@@ -567,7 +498,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
               </thead>
               <tbody>
                 {ct.rows.map((row) => (
-                  <tr key={row.id} className="even:bg-[#F9F8F5]">
+                  <tr data-pdf-tr="true" key={row.id} className="even:bg-[#F9F8F5]">
                     {ct.columns.map((col) => (
                       <td key={col.id} className="p-2 border border-[#EBE9E1] text-[#3D3D3D]">
                         {row.values[col.id] || '-'}
@@ -582,13 +513,13 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 
         {/* 8. Recommendations & Immediate Actions */}
         {recommendations && recommendations.length > 0 && (
-          <section className="mb-6">
-            <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-2.5 pb-1 border-b-2 border-[#344E41]">
+          <section className="mb-6 section">
+            <h3 data-pdf-block="true" className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider mb-2.5 pb-1 border-b-2 border-[#344E41]">
               Recommandations & Actions Immédiates
             </h3>
             <ul className="space-y-1.5 pl-1">
               {recommendations.map((rec, idx) => (
-                <li key={rec.id} className="flex items-start space-x-2 text-xs text-[#3D3D3D]">
+                <li data-pdf-block="true" key={rec.id} className="flex items-start space-x-2 text-xs text-[#3D3D3D]">
                   <span className="font-black text-[#E9EDC9] bg-[#344E41] rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px] mt-0.5">
                     {idx + 1}
                   </span>
@@ -600,7 +531,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
         )}
 
         {/* 9. Footer & Sign-off Block */}
-        <footer className="pt-4 border-t-2 border-[#EBE9E1] mt-8">
+        <footer data-pdf-block="true" className="pt-4 border-t-2 border-[#EBE9E1] mt-8">
           <div className="flex items-end justify-between">
             <div>
               <p className="font-serif italic font-bold text-xs text-[#344E41]">
