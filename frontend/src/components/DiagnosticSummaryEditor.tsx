@@ -83,7 +83,11 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
 
     fetch(`${API_BASE}/quick-formulas`, { headers })
       .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setDbFormulas(d); })
+      .then(d => { 
+        if (Array.isArray(d)) {
+          setDbFormulas(d.filter((f: any) => f.category === 'diagnostic')); 
+        }
+      })
       .catch(e => console.error(e));
 
     fetch(`${API_BASE}/evaluation-templates`, { headers })
