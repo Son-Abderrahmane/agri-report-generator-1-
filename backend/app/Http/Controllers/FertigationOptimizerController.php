@@ -59,6 +59,45 @@ class FertigationOptimizerController extends Controller
         }
         return response()->json($query->orderBy('order_index')->get());
     }
+
+    public function createGrowthStage(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'crop_id' => 'required|integer',
+            'duration_days' => 'nullable|integer',
+            'target_ec_min' => 'nullable|numeric',
+            'target_ec_max' => 'nullable|numeric',
+            'target_ph_min' => 'nullable|numeric',
+            'target_ph_max' => 'nullable|numeric',
+            'order_index' => 'nullable|integer',
+            'recipes' => 'nullable|array'
+        ]);
+
+        $stage = GrowthStage::create($request->except('recipes'));
+
+        if (!empty($validated['recipes'])) {
+            foreach ($validated['recipes'] as $recipeData) {
+                $recipe = $stage->recipes()->create(['name' => $recipeData['name'] ?? 'Default Recipe']);
+                if (!empty($recipeData['targets'])) {
+                    foreach ($recipeData['targets'] as $targetData) {
+                        $recipe->targets()->create([
+                            'nutrient' => $targetData['nutrient'],
+                            'target_ppm' => $targetData['target_ppm']
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return response()->json($stage->load('recipes.targets'), 201);
+    }
+
+    public function deleteGrowthStage($id)
+    {
+        GrowthStage::findOrFail($id)->delete();
+        return response()->json(['message' => 'Deleted']);
+    }
     
     // --- Water Analyses ---
     public function getWaterAnalyses()
