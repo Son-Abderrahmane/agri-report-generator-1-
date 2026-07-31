@@ -203,6 +203,15 @@ class FertigationOptimizerController extends Controller
 
         $result = $this->optimizer->optimize($targets, $waterAnalysis, $availableSoilNutrients, $fertilizers, $params);
 
+        $inputs = [
+            'targets' => $targets,
+            'water' => $waterAnalysis,
+            'soil_analysis_id' => $validated['soil_analysis_id'] ?? null,
+            'available_soil_nutrients' => $availableSoilNutrients,
+            'fertilizer_ids' => $validated['fertilizer_ids'],
+            'params' => $params
+        ];
+
         $run = OptimizationRun::create([
             'user_id' => auth()->id(),
             'crop_id' => $recipe->growth_stage_id ? GrowthStage::find($recipe->growth_stage_id)->crop_id : null,
@@ -210,18 +219,12 @@ class FertigationOptimizerController extends Controller
             'water_analysis_id' => $validated['water_analysis_id'] ?? null,
             'optimization_objective' => $params['objective'],
             'total_cost' => $result['total_cost'] ?? 0,
-            'inputs_json' => [
-                'targets' => $targets,
-                'water' => $waterAnalysis,
-                'soil_analysis_id' => $validated['soil_analysis_id'] ?? null,
-                'available_soil_nutrients' => $availableSoilNutrients,
-                'fertilizer_ids' => $validated['fertilizer_ids'],
-                'params' => $params
-            ],
+            'inputs_json' => $inputs,
             'results_json' => $result
         ]);
 
         $result['run_id'] = $run->id;
+        $result['inputs_json'] = $inputs;
 
         return response()->json($result);
     }

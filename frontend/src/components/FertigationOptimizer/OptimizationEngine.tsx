@@ -227,11 +227,11 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
                     <span className="block font-mono text-lg font-bold text-[#344E41]">{achieved.toFixed(0)} <span className="text-xs font-normal text-gray-400">/ {results.net_targets[n]?.toFixed(0) || 0}</span></span>
                     <div className="w-full bg-gray-200 h-1.5 rounded-full mt-2 overflow-hidden flex">
                       {/* Water contribution */}
-                      <div className="h-full bg-blue-400 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json.water[n] || 0) / target) * 100 : 0}%`}}></div>
+                      <div className="h-full bg-blue-400 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json?.water?.[n] || 0) / target) * 100 : 0}%`}}></div>
                       {/* Soil contribution */}
-                      <div className="h-full bg-amber-600 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json.available_soil_nutrients?.[n] || 0) / target) * 100 : 0}%`}}></div>
+                      <div className="h-full bg-amber-600 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json?.available_soil_nutrients?.[n] || 0) / target) * 100 : 0}%`}}></div>
                       {/* Fertilizer contribution */}
-                      <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${target > 0 ? ((achieved - (results.inputs_json.water[n] || 0) - (results.inputs_json.available_soil_nutrients?.[n] || 0)) / target) * 100 : 0}%`}}></div>
+                      <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${target > 0 ? ((achieved - (results.inputs_json?.water?.[n] || 0) - (results.inputs_json?.available_soil_nutrients?.[n] || 0)) / target) * 100 : 0}%`}}></div>
                     </div>
                   </div>
                 )
