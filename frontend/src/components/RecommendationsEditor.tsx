@@ -17,6 +17,8 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
 }) => {
   const [categories, setCategories] = useState<RecommendationCategory[]>([]);
   const [formulas, setFormulas] = useState<QuickFormula[]>([]);
+  const [activeInputId, setActiveInputId] = useState<string | null>(null);
+  const [backupText, setBackupText] = useState<string>('');
 
   useEffect(() => {
     if (!apiBase || !token) return;
@@ -130,6 +132,19 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
                   list="formulas-list"
                   value={item.text}
                   onChange={(e) => handleUpdateItem(item.id, 'text', e.target.value)}
+                  onFocus={() => {
+                    setActiveInputId(item.id);
+                    setBackupText(item.text);
+                    handleUpdateItem(item.id, 'text', '');
+                  }}
+                  onBlur={() => {
+                    if (activeInputId === item.id) {
+                      if (item.text.trim() === '') {
+                        handleUpdateItem(item.id, 'text', backupText);
+                      }
+                      setActiveInputId(null);
+                    }
+                  }}
                   placeholder="ex: Aérer les serres dès 08h00..."
                   className="w-full text-xs sm:text-sm font-medium text-[#3D3D3D] bg-white border border-[#EBE9E1] rounded-xl px-3 py-1.5 focus:border-[#A3B18A] focus:outline-none"
                 />

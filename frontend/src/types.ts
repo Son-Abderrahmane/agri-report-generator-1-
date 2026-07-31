@@ -183,3 +183,78 @@ export interface RecommendationCategory {
   created_at?: string;
   updated_at?: string;
 }
+
+// --- Advanced Fertigation Optimizer Types ---
+
+export interface OptimizerFertilizer {
+  id: number;
+  name: string;
+  commercial_name?: string;
+  type: string;
+  unit: string;
+  density?: number;
+  price_per_unit?: number;
+  n?: number;
+  p?: number;
+  p2o5?: number;
+  k?: number;
+  k2o?: number;
+  ca?: number;
+  mg?: number;
+  s?: number;
+  fe?: number;
+  mn?: number;
+  zn?: number;
+  cu?: number;
+  b?: number;
+  mo?: number;
+  si?: number;
+}
+
+export interface GrowthStageTarget {
+  id?: number;
+  recipe_id?: number;
+  nutrient: string;
+  target_ppm: number;
+}
+
+export interface GrowthStageRecipe {
+  id?: number;
+  growth_stage_id?: number;
+  name: string;
+  description?: string;
+  targets: GrowthStageTarget[];
+}
+
+export interface OptimizerGrowthStage {
+  id: number;
+  crop_id: number;
+  name: string;
+  duration_days?: number;
+  target_ec_min?: number;
+  target_ec_max?: number;
+  target_ph_min?: number;
+  target_ph_max?: number;
+  order_index: number;
+  recipes?: GrowthStageRecipe[];
+}
+
+export interface OptimizerWaterAnalysis {
+  id: number;
+  name: string;
+  n?: number;
+  p?: number;
+  k?: number;
+  ca?: number;
+  mg?: number;
+  s?: number;
+  na?: number;
+  cl?: number;
+  ec?: number;
+  ph?: number;
+  hardness?: number;
+  alkalinity?: number;
+  hco3?: number;
+  co3?: number;
+  fe?: number;
+}

@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'editor' | 'preview' | 'list' | 'templates' | 'settings';
-  setActiveTab: (tab: 'editor' | 'preview' | 'list' | 'templates' | 'settings') => void;
+  activeTab: 'editor' | 'preview' | 'list' | 'templates' | 'settings' | 'optimizer';
+  setActiveTab: (tab: 'editor' | 'preview' | 'list' | 'templates' | 'settings' | 'optimizer') => void;
   reportTitle: string;
   reportStatus: 'draft' | 'validated' | 'archived';
   onStatusChange: (status: 'draft' | 'validated' | 'archived') => void;
@@ -112,6 +112,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <FolderOpen className="w-4 h-4" />
               <span>Mes Rapports</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('optimizer')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === 'optimizer'
+                  ? 'bg-[#A3B18A] text-[#344E41] shadow-sm font-bold'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Optimiseur HydroBuddy</span>
             </button>
 
             <button
@@ -233,6 +245,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <FolderOpen className="w-4 h-4 mb-0.5" />
             <span>Mes Rapports</span>
           </button>
+          
+          <button
+            onClick={() => setActiveTab('optimizer')}
+            className={`flex flex-col items-center py-1 px-2 rounded-lg ${
+              activeTab === 'optimizer' ? 'text-[#E9EDC9] font-bold bg-[#344E41]/60' : 'text-white/70'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 mb-0.5" />
+            <span>Optimiseur</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('templates')}
             className={`flex flex-col items-center py-1 px-2 rounded-lg ${

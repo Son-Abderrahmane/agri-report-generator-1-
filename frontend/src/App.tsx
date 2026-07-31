@@ -16,6 +16,7 @@ import { ReportsList } from './components/ReportsList';
 import { TemplateSelector } from './components/TemplateSelector';
 import { Login } from './components/Login';
 import { MasterDataSettings } from './components/MasterDataSettings';
+import { OptimizerLayout } from './components/FertigationOptimizer/OptimizerLayout';
 import { CheckCircle, AlertCircle, Save, FileText, Download } from 'lucide-react';
 
 // @ts-ignore
@@ -34,7 +35,7 @@ if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'list' | 'templates' | 'settings'>('editor');
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'list' | 'templates' | 'settings' | 'optimizer'>('editor');
   const [report, setReport] = useState<Report>(() => createNewReport());
   const [reportsList, setReportsList] = useState<Report[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -457,6 +458,12 @@ export default function App() {
 
         {activeTab === 'settings' && (
           <MasterDataSettings apiBase={API_BASE} token={authToken || ''} />
+        )}
+
+        {activeTab === 'optimizer' && (
+          <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6">
+            <OptimizerLayout apiBase={API_BASE} token={authToken || ''} />
+          </div>
         )}
       </main>
     </div>
