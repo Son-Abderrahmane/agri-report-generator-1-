@@ -338,6 +338,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
               {editingPesticide && (
                 <div className="bg-[#F9F8F5] p-4 rounded-xl border border-[#CCD5AE] mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input type="text" placeholder="Produit (ex: ACTARA 25 WG)" value={editingPesticide.product_name || ''} onChange={e => setEditingPesticide({...editingPesticide, product_name: e.target.value})} className="border p-2 rounded text-sm"/>
+                  <input type="text" placeholder="Matière active" value={editingPesticide.active_ingredient || ''} onChange={e => setEditingPesticide({...editingPesticide, active_ingredient: e.target.value})} className="border p-2 rounded text-sm"/>
                   <input type="text" placeholder="Cible (ex: Acariens)" value={editingPesticide.target_pest || ''} onChange={e => setEditingPesticide({...editingPesticide, target_pest: e.target.value})} className="border p-2 rounded text-sm"/>
                   <input type="text" placeholder="Détenteur" value={editingPesticide.holder || ''} onChange={e => setEditingPesticide({...editingPesticide, holder: e.target.value})} className="border p-2 rounded text-sm"/>
                   <input type="text" placeholder="Fournisseur" value={editingPesticide.supplier || ''} onChange={e => setEditingPesticide({...editingPesticide, supplier: e.target.value})} className="border p-2 rounded text-sm"/>
@@ -362,6 +363,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                     <tr>
                       <th className="p-2 border">Culture</th>
                       <th className="p-2 border">Produit</th>
+                      <th className="p-2 border">M. Active</th>
                       <th className="p-2 border">Cible</th>
                       <th className="p-2 border">Dose</th>
                       <th className="p-2 border">Teneur</th>
@@ -376,6 +378,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                       <tr key={p.id} className="border-b hover:bg-gray-50">
                         <td className="p-2 border">{p.crop_name || '-'}</td>
                         <td className="p-2 border font-bold text-[#344E41]">{p.product_name}</td>
+                        <td className="p-2 border text-xs text-gray-600">{p.active_ingredient || '-'}</td>
                         <td className="p-2 border">{p.target_pest || '-'}</td>
                         <td className="p-2 border font-mono">{p.dosage || '-'}</td>
                         <td className="p-2 border text-xs">{p.teneur || '-'}</td>
