@@ -12,7 +12,7 @@ interface OptimizerLayoutProps {
 }
 
 export const OptimizerLayout: React.FC<OptimizerLayoutProps> = ({ apiBase, token }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'fertilizers' | 'stages' | 'water' | 'engine' | 'reports'>('engine');
+  const [activeTab, setActiveTab] = useState<'overview' | 'fertilizers' | 'stages' | 'water' | 'soil' | 'engine' | 'reports'>('engine');
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-[#EBE9E1] p-5 sm:p-6 mb-6">
@@ -39,6 +39,7 @@ export const OptimizerLayout: React.FC<OptimizerLayoutProps> = ({ apiBase, token
           { id: 'fertilizers', label: 'Engrais & Acides', icon: <Beaker className="w-4 h-4" /> },
           { id: 'stages', label: 'Stades Végétatifs', icon: <Sprout className="w-4 h-4" /> },
           { id: 'water', label: 'Analyse d\'Eau', icon: <Droplets className="w-4 h-4" /> },
+          { id: 'soil', label: 'Analyse de Sol', icon: <Sprout className="w-4 h-4" /> },
           { id: 'reports', label: 'Rapports', icon: <CheckCircle className="w-4 h-4" /> },
         ].map(tab => (
           <button
