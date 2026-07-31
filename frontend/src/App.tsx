@@ -48,6 +48,7 @@ export default function App() {
       setIsOnline(true);
       syncOfflineReports();
     };
+    const handleOffline = () => setIsOnline(false);
     const handleToastEvent = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent.detail) {
