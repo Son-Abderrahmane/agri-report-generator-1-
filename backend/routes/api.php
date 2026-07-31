@@ -52,6 +52,11 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::put('/optimizer/water-analyses/{id}', [FertigationOptimizerController::class, 'updateWaterAnalysis']);
     Route::delete('/optimizer/water-analyses/{id}', [FertigationOptimizerController::class, 'deleteWaterAnalysis']);
 
+    Route::get('/optimizer/soil-analyses', [FertigationOptimizerController::class, 'getSoilAnalyses']);
+    Route::post('/optimizer/soil-analyses', [FertigationOptimizerController::class, 'createSoilAnalysis']);
+    Route::put('/optimizer/soil-analyses/{id}', [FertigationOptimizerController::class, 'updateSoilAnalysis']);
+    Route::delete('/optimizer/soil-analyses/{id}', [FertigationOptimizerController::class, 'deleteSoilAnalysis']);
+
     Route::post('/optimizer/run', [FertigationOptimizerController::class, 'runOptimization']);
 
     // Master Data Routes

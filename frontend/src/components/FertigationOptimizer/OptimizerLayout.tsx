@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Beaker, Sprout, Droplets, LineChart, CheckCircle } from 'lucide-react';
 import { FertilizersManager } from './FertilizersManager';
 import { WaterAnalysisManager } from './WaterAnalysisManager';
+import { SoilAnalysisManager } from './SoilAnalysisManager';
 import { GrowthStagesManager } from './GrowthStagesManager';
 import { OptimizationEngine } from './OptimizationEngine';
 
@@ -68,6 +69,9 @@ export const OptimizerLayout: React.FC<OptimizerLayoutProps> = ({ apiBase, token
         )}
         {activeTab === 'water' && (
           <WaterAnalysisManager apiBase={apiBase} token={token} />
+        )}
+        {activeTab === 'soil' && (
+          <SoilAnalysisManager apiBase={apiBase} token={token} />
         )}
         {activeTab === 'reports' && (
           <div className="text-center py-10 text-gray-500">Rapports d'optimisation en construction...</div>

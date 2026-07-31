@@ -258,3 +258,41 @@ export interface OptimizerWaterAnalysis {
   co3?: number;
   fe?: number;
 }
+
+export interface OptimizerSoilAnalysis {
+  id: number;
+  name: string;
+  field_name?: string;
+  crop_id?: number;
+  laboratory_name?: string;
+  analysis_number?: string;
+  sampling_method?: string;
+  gps_location?: string;
+  sampling_date?: string;
+  depth?: number;
+  status: string;
+  
+  unit: string;
+  texture?: string;
+  organic_matter?: number;
+  organic_carbon?: number;
+  cec?: number;
+  
+  ph?: number;
+  ec?: number;
+  ca_co3?: number;
+  
+  n?: number; p?: number; k?: number; ca?: number; mg?: number; s?: number;
+  fe?: number; mn?: number; zn?: number; cu?: number; b?: number; mo?: number; si?: number;
+  na?: number; cl?: number; sar?: number; esp?: number;
+  
+  notes?: string;
+}
+
+export interface SoilFertilityThreshold {
+  id: number;
+  crop_id?: number;
+  nutrient: string;
+  low_threshold: number;
+  high_threshold: number;
+}

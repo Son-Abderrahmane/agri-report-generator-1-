@@ -20,16 +20,16 @@ class HeuristicOptimizationSolver implements OptimizationServiceInterface
         $this->tankGenerator = $tankGenerator;
     }
 
-    public function optimize(array $targets, array $waterAnalysis, array $fertilizers, array $params): array
+    public function optimize(array $targets, array $waterAnalysis, array $availableSoilNutrients, array $fertilizers, array $params): array
     {
-        $netTargets = $this->waterProcessor->calculateNetTargets($targets, $waterAnalysis);
+        $netTargets = $this->waterProcessor->calculateNetTargets($targets, $waterAnalysis, $availableSoilNutrients);
         
         $doses = [];
         $achieved = [];
         
-        // Initialize achieved with water nutrients
+        // Initialize achieved with water and available soil nutrients
         foreach (['n', 'p', 'k', 'ca', 'mg', 's', 'fe', 'mn', 'zn', 'cu', 'b', 'mo', 'si'] as $n) {
-            $achieved[$n] = $waterAnalysis[$n] ?? 0;
+            $achieved[$n] = ($waterAnalysis[$n] ?? 0) + ($availableSoilNutrients[$n] ?? 0);
         }
 
         $volumeLiters = $params['irrigation_volume_liters'] ?? 10000; // default 10m3

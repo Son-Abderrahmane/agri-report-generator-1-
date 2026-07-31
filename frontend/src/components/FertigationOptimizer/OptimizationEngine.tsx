@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { OptimizerFertilizer, OptimizerGrowthStage, OptimizerWaterAnalysis } from '../../types';
-import { Play, Settings, Droplets, FlaskConical, Beaker, CheckCircle } from 'lucide-react';
+import { OptimizerFertilizer, OptimizerGrowthStage, OptimizerWaterAnalysis, OptimizerSoilAnalysis } from '../../types';
+import { Play, Settings, Droplets, FlaskConical, Beaker, CheckCircle, Layers } from 'lucide-react';
 
 interface OptimizationEngineProps {
   apiBase: string;
@@ -11,10 +11,12 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
   const [fertilizers, setFertilizers] = useState<OptimizerFertilizer[]>([]);
   const [stages, setStages] = useState<OptimizerGrowthStage[]>([]);
   const [waterAnalyses, setWaterAnalyses] = useState<OptimizerWaterAnalysis[]>([]);
+  const [soilAnalyses, setSoilAnalyses] = useState<OptimizerSoilAnalysis[]>([]);
   
   const [selectedFertilizers, setSelectedFertilizers] = useState<number[]>([]);
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
   const [selectedWaterId, setSelectedWaterId] = useState<number | null>(null);
+  const [selectedSoilId, setSelectedSoilId] = useState<number | null>(null);
   const [volume, setVolume] = useState<number>(10000); // L
   
   const [results, setResults] = useState<any>(null);
@@ -27,10 +29,11 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
   const fetchData = async () => {
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const [fRes, sRes, wRes] = await Promise.all([
+      const [fRes, sRes, wRes, saRes] = await Promise.all([
         fetch(`${apiBase}/optimizer/fertilizers`, { headers }),
         fetch(`${apiBase}/optimizer/growth-stages`, { headers }),
-        fetch(`${apiBase}/optimizer/water-analyses`, { headers })
+        fetch(`${apiBase}/optimizer/water-analyses`, { headers }),
+        fetch(`${apiBase}/optimizer/soil-analyses`, { headers })
       ]);
       if (fRes.ok) setFertilizers(await fRes.json());
       if (sRes.ok) setStages(await sRes.json());
@@ -38,6 +41,10 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
         const wa = await wRes.json();
         setWaterAnalyses(wa);
         if (wa.length > 0) setSelectedWaterId(wa[0].id);
+      }
+      if (saRes.ok) {
+        const sa = await saRes.json();
+        setSoilAnalyses(sa);
       }
     } catch (e) {
       console.error(e);
@@ -59,6 +66,7 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
         body: JSON.stringify({
           recipe_id: selectedRecipeId,
           water_analysis_id: selectedWaterId,
+          soil_analysis_id: selectedSoilId,
           fertilizer_ids: selectedFertilizers,
           irrigation_volume_liters: volume,
           objective: 'target_accuracy'
@@ -118,10 +126,20 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-2">4. Analyse de Sol (Optionnelle)</label>
+            <select value={selectedSoilId || ''} onChange={e => setSelectedSoilId(Number(e.target.value) || null)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:border-[#A3B18A] focus:outline-none bg-white">
+              <option value="">Aucune (Culture hors-sol)</option>
+              {soilAnalyses.map(sa => (
+                <option key={sa.id} value={sa.id}>{sa.name} - {sa.texture || 'Sol'}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="mt-6">
-          <label className="block text-xs font-bold text-gray-600 mb-2">4. Engrais Disponibles (Cochez pour utiliser)</label>
+          <label className="block text-xs font-bold text-gray-600 mb-2">5. Engrais Disponibles (Cochez pour utiliser)</label>
           <div className="flex flex-wrap gap-2">
             {fertilizers.map(f => (
               <button
@@ -207,8 +225,13 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
                   <div key={n} className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
                     <span className="block text-xs font-bold text-gray-500 uppercase mb-1">{n}</span>
                     <span className="block font-mono text-lg font-bold text-[#344E41]">{achieved.toFixed(0)} <span className="text-xs font-normal text-gray-400">/ {results.net_targets[n]?.toFixed(0) || 0}</span></span>
-                    <div className="w-full bg-gray-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                      <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${percent}%`}}></div>
+                    <div className="w-full bg-gray-200 h-1.5 rounded-full mt-2 overflow-hidden flex">
+                      {/* Water contribution */}
+                      <div className="h-full bg-blue-400 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json.water[n] || 0) / target) * 100 : 0}%`}}></div>
+                      {/* Soil contribution */}
+                      <div className="h-full bg-amber-600 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json.available_soil_nutrients?.[n] || 0) / target) * 100 : 0}%`}}></div>
+                      {/* Fertilizer contribution */}
+                      <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${target > 0 ? ((achieved - (results.inputs_json.water[n] || 0) - (results.inputs_json.available_soil_nutrients?.[n] || 0)) / target) * 100 : 0}%`}}></div>
                     </div>
                   </div>
                 )

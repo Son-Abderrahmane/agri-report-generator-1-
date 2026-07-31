@@ -8,16 +8,22 @@ use App\Models\GrowthStage;
 use App\Models\GrowthStageRecipe;
 use App\Models\GrowthStageTarget;
 use App\Models\WaterAnalysis;
+use App\Models\SoilAnalysis;
 use App\Models\OptimizationRun;
 use App\Services\Fertigation\OptimizationServiceInterface;
+use App\Services\Fertigation\SoilAvailabilityService;
 
 class FertigationOptimizerController extends Controller
 {
     protected $optimizer;
+    protected $soilAvailabilityService;
 
-    public function __construct(OptimizationServiceInterface $optimizer)
-    {
+    public function __construct(
+        OptimizationServiceInterface $optimizer,
+        SoilAvailabilityService $soilAvailabilityService
+    ) {
         $this->optimizer = $optimizer;
+        $this->soilAvailabilityService = $soilAvailabilityService;
     }
 
     // --- Fertilizers ---
@@ -124,12 +130,42 @@ class FertigationOptimizerController extends Controller
         return response()->json(['message' => 'Deleted']);
     }
 
+    // --- Soil Analyses ---
+    public function getSoilAnalyses()
+    {
+        return response()->json(SoilAnalysis::all());
+    }
+
+    public function createSoilAnalysis(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'crop_id' => 'required|integer'
+        ]);
+        $sa = SoilAnalysis::create($request->all());
+        return response()->json($sa, 201);
+    }
+
+    public function updateSoilAnalysis(Request $request, $id)
+    {
+        $sa = SoilAnalysis::findOrFail($id);
+        $sa->update($request->all());
+        return response()->json($sa);
+    }
+
+    public function deleteSoilAnalysis($id)
+    {
+        SoilAnalysis::findOrFail($id)->delete();
+        return response()->json(['message' => 'Deleted']);
+    }
+
     // --- Optimization Engine Endpoint ---
     public function runOptimization(Request $request)
     {
         $validated = $request->validate([
             'recipe_id' => 'required|exists:growth_stage_recipes,id',
             'water_analysis_id' => 'nullable|exists:water_analyses,id',
+            'soil_analysis_id' => 'nullable|exists:soil_analyses,id',
             'fertilizer_ids' => 'required|array',
             'fertilizer_ids.*' => 'exists:fertilizers,id',
             'irrigation_volume_liters' => 'required|numeric',
@@ -148,6 +184,16 @@ class FertigationOptimizerController extends Controller
             $waterAnalysis = $waModel ? $waModel->toArray() : [];
         }
 
+        $availableSoilNutrients = [];
+        $soilAnalysisData = [];
+        if (!empty($validated['soil_analysis_id'])) {
+            $saModel = SoilAnalysis::find($validated['soil_analysis_id']);
+            if ($saModel) {
+                $soilAnalysisData = $saModel->toArray();
+                $availableSoilNutrients = $this->soilAvailabilityService->calculateAvailableNutrients($soilAnalysisData);
+            }
+        }
+
         $fertilizers = Fertilizer::whereIn('id', $validated['fertilizer_ids'])->get()->toArray();
 
         $params = [
@@ -155,7 +201,7 @@ class FertigationOptimizerController extends Controller
             'objective' => $validated['objective'] ?? 'target_accuracy',
         ];
 
-        $result = $this->optimizer->optimize($targets, $waterAnalysis, $fertilizers, $params);
+        $result = $this->optimizer->optimize($targets, $waterAnalysis, $availableSoilNutrients, $fertilizers, $params);
 
         $run = OptimizationRun::create([
             'user_id' => auth()->id(),
@@ -167,6 +213,8 @@ class FertigationOptimizerController extends Controller
             'inputs_json' => [
                 'targets' => $targets,
                 'water' => $waterAnalysis,
+                'soil_analysis_id' => $validated['soil_analysis_id'] ?? null,
+                'available_soil_nutrients' => $availableSoilNutrients,
                 'fertilizer_ids' => $validated['fertilizer_ids'],
                 'params' => $params
             ],
