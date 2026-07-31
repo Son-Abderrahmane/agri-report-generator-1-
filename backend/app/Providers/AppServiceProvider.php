@@ -12,7 +12,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Services\Fertigation\OptimizationServiceInterface::class,
+            \App\Services\Fertigation\HeuristicOptimizationSolver::class
+        );
     }
 
     /**

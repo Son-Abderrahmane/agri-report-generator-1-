@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\FertigationOptimizerController;
 
 use Illuminate\Http\Request;
 
@@ -35,6 +36,21 @@ Route::middleware(['admin.auth'])->group(function () {
     
     // Fertigation Engine
     Route::post('/fertigation/calculate', [\App\Http\Controllers\FertigationController::class, 'calculate']);
+
+    // Advanced Fertigation Optimizer
+    Route::get('/optimizer/fertilizers', [FertigationOptimizerController::class, 'getFertilizers']);
+    Route::post('/optimizer/fertilizers', [FertigationOptimizerController::class, 'createFertilizer']);
+    Route::put('/optimizer/fertilizers/{id}', [FertigationOptimizerController::class, 'updateFertilizer']);
+    Route::delete('/optimizer/fertilizers/{id}', [FertigationOptimizerController::class, 'deleteFertilizer']);
+
+    Route::get('/optimizer/growth-stages', [FertigationOptimizerController::class, 'getGrowthStages']);
+    
+    Route::get('/optimizer/water-analyses', [FertigationOptimizerController::class, 'getWaterAnalyses']);
+    Route::post('/optimizer/water-analyses', [FertigationOptimizerController::class, 'createWaterAnalysis']);
+    Route::put('/optimizer/water-analyses/{id}', [FertigationOptimizerController::class, 'updateWaterAnalysis']);
+    Route::delete('/optimizer/water-analyses/{id}', [FertigationOptimizerController::class, 'deleteWaterAnalysis']);
+
+    Route::post('/optimizer/run', [FertigationOptimizerController::class, 'runOptimization']);
 
     // Master Data Routes
     Route::get('/crops', [MasterDataController::class, 'getCrops']);

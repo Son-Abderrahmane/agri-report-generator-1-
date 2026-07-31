@@ -12,4 +12,9 @@ class Crop extends Model
     {
         return $this->hasMany(Pesticide::class);
     }
+
+    public function growthStages()
+    {
+        return $this->hasMany(GrowthStage::class);
+    }
 }
