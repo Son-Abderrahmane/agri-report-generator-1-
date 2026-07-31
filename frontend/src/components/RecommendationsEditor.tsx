@@ -1,21 +1,52 @@
-import React from 'react';
-import { RecommendationItem } from '../types';
+import React, { useState, useEffect } from 'react';
+import { RecommendationItem, RecommendationCategory, QuickFormula } from '../types';
 import { CheckSquare, Plus, Trash2, Tag, AlertCircle } from 'lucide-react';
 
 interface RecommendationsEditorProps {
   recommendations: RecommendationItem[];
   onChange: (updated: RecommendationItem[]) => void;
+  apiBase?: string;
+  token?: string;
 }
 
 export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
   recommendations,
   onChange,
+  apiBase,
+  token
 }) => {
+  const [categories, setCategories] = useState<RecommendationCategory[]>([]);
+  const [formulas, setFormulas] = useState<QuickFormula[]>([]);
+
+  useEffect(() => {
+    if (!apiBase || !token) return;
+
+    const fetchMasterData = async () => {
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        };
+        const [catRes, formRes] = await Promise.all([
+          fetch(`${apiBase}/recommendation-categories`, { headers }),
+          fetch(`${apiBase}/quick-formulas`, { headers })
+        ]);
+        if (catRes.ok) setCategories(await catRes.json());
+        if (formRes.ok) {
+          const allFormulas: QuickFormula[] = await formRes.json();
+          setFormulas(allFormulas.filter(f => f.category === 'recommendation'));
+        }
+      } catch (e) {
+        console.error('Failed to load recommendation master data', e);
+      }
+    };
+    fetchMasterData();
+  }, [apiBase, token]);
   const handleAddRecommendation = () => {
     const newItem: RecommendationItem = {
       id: `rec_${Date.now()}`,
       text: '',
-      category: 'general',
+      category: categories.length > 0 ? categories[0].name : 'Général',
     };
     onChange([...recommendations, newItem]);
   };
@@ -80,23 +111,29 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
               </span>
 
               <select
-                value={item.category || 'general'}
+                value={item.category || (categories.length > 0 ? categories[0].name : 'Général')}
                 onChange={(e) => handleUpdateItem(item.id, 'category', e.target.value)}
-                className="text-xs font-bold text-[#344E41] bg-white border border-[#EBE9E1] rounded-xl px-2.5 py-1.5 focus:outline-none shrink-0"
+                className="text-xs font-bold text-[#344E41] bg-white border border-[#EBE9E1] rounded-xl px-2.5 py-1.5 focus:outline-none shrink-0 max-w-[150px]"
               >
-                <option value="general">Général</option>
-                <option value="irrigation">Irrigation / Drainage</option>
-                <option value="phytosanitary">Phytosanitaire</option>
-                <option value="climate">Climat & Serre</option>
+                {categories.length > 0 ? (
+                  categories.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))
+                ) : (
+                  <option value="Général">Général</option>
+                )}
               </select>
 
-              <input
-                type="text"
-                value={item.text}
-                onChange={(e) => handleUpdateItem(item.id, 'text', e.target.value)}
-                placeholder="ex: Aérer les serres dès 08h00 pour maintenir l'hygrométrie sous 85%..."
-                className="flex-1 text-xs sm:text-sm font-medium text-[#3D3D3D] bg-white border border-[#EBE9E1] rounded-xl px-3 py-1.5 focus:border-[#A3B18A] focus:outline-none"
-              />
+              <div className="flex-1">
+                <input
+                  type="text"
+                  list="formulas-list"
+                  value={item.text}
+                  onChange={(e) => handleUpdateItem(item.id, 'text', e.target.value)}
+                  placeholder="ex: Aérer les serres dès 08h00..."
+                  className="w-full text-xs sm:text-sm font-medium text-[#3D3D3D] bg-white border border-[#EBE9E1] rounded-xl px-3 py-1.5 focus:border-[#A3B18A] focus:outline-none"
+                />
+              </div>
 
               <button
                 onClick={() => handleRemoveItem(item.id)}
@@ -109,6 +146,12 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
           ))
         )}
       </div>
+
+      <datalist id="formulas-list">
+        {formulas.map(f => (
+          <option key={f.id} value={f.content} />
+        ))}
+      </datalist>
     </div>
   );
 };

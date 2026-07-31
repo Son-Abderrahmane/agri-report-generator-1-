@@ -417,6 +417,8 @@ export default function App() {
             <RecommendationsEditor
               recommendations={report.recommendations}
               onChange={(recommendations) => setReport({ ...report, recommendations })}
+              apiBase={API_BASE}
+              token={authToken || ''}
             />
 
             {/* 9. Footer & Consultant Sign-off */}

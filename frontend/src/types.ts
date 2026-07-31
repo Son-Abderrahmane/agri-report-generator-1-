@@ -89,7 +89,7 @@ export interface CustomTable {
 export interface RecommendationItem {
   id: string;
   text: string;
-  category?: 'general' | 'irrigation' | 'phytosanitary' | 'climate';
+  category?: string;
   completed?: boolean;
 }
 
@@ -173,6 +173,13 @@ export interface EvaluationTemplate {
   condition_explanation?: string;
   preventive_action?: string;
   report_sentence?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface RecommendationCategory {
+  id: number;
+  name: string;
   created_at?: string;
   updated_at?: string;
 }

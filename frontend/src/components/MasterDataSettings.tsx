@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Crop, Pesticide, QuickFormula, EvaluationTemplate } from '../types';
+import { Crop, Pesticide, QuickFormula, EvaluationTemplate, RecommendationCategory } from '../types';
 import { Settings, Save, Plus, Trash2, Edit2, ShieldAlert, Loader2, RefreshCw } from 'lucide-react';
 
 interface MasterDataSettingsProps {
@@ -8,7 +8,7 @@ interface MasterDataSettingsProps {
 }
 
 export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase, token }) => {
-  const [activeTab, setActiveTab] = useState<'pesticides' | 'crops' | 'formulas' | 'evaluations'>('pesticides');
+  const [activeTab, setActiveTab] = useState<'pesticides' | 'crops' | 'formulas' | 'evaluations' | 'categories'>('pesticides');
   const [isLoading, setIsLoading] = useState(false);
   const [showImportZone, setShowImportZone] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -20,12 +20,14 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
   const [pesticides, setPesticides] = useState<Pesticide[]>([]);
   const [formulas, setFormulas] = useState<QuickFormula[]>([]);
   const [evaluations, setEvaluations] = useState<EvaluationTemplate[]>([]);
+  const [categories, setCategories] = useState<RecommendationCategory[]>([]);
 
   // Form States
   const [editingPesticide, setEditingPesticide] = useState<Partial<Pesticide> | null>(null);
   const [editingFormula, setEditingFormula] = useState<Partial<QuickFormula> | null>(null);
   const [editingEval, setEditingEval] = useState<Partial<EvaluationTemplate> | null>(null);
   const [newCropName, setNewCropName] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const headers = {
     'Content-Type': 'application/json',
@@ -92,16 +94,18 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [cr, pe, fo, ev] = await Promise.all([
+      const [cr, pe, fo, ev, cat] = await Promise.all([
         fetch(`${apiBase}/crops`, { headers }).then(res => res.json()),
         fetch(`${apiBase}/pesticides`, { headers }).then(res => res.json()),
         fetch(`${apiBase}/quick-formulas`, { headers }).then(res => res.json()),
-        fetch(`${apiBase}/evaluation-templates`, { headers }).then(res => res.json())
+        fetch(`${apiBase}/evaluation-templates`, { headers }).then(res => res.json()),
+        fetch(`${apiBase}/recommendation-categories`, { headers }).then(res => res.json())
       ]);
       setCrops(cr || []);
       setPesticides(pe || []);
       setFormulas(fo || []);
       setEvaluations(ev || []);
+      setCategories(cat || []);
     } catch (e) {
       console.error('Failed to load master data', e);
     } finally {
@@ -210,6 +214,27 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
     fetchData();
   };
 
+  // --- CRUD Categories ---
+  const handleSaveCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      const res = await fetch(`${apiBase}/recommendation-categories`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: newCategoryName })
+      });
+      if (res.ok) {
+        setNewCategoryName('');
+        fetchData();
+      }
+    } catch (e) { console.error(e); }
+  };
+  const handleDeleteCategory = async (id: number) => {
+    if (!window.confirm('Supprimer cette catégorie ?')) return;
+    await fetch(`${apiBase}/recommendation-categories/${id}`, { method: 'DELETE', headers });
+    fetchData();
+  };
+
   const uniquePesticideCrops = Array.from(new Set(pesticides.map(p => p.crop_name).filter(Boolean))) as string[];
   const filteredPesticides = pesticides.filter(p => !filterCulture || p.crop_name === filterCulture);
   const itemsPerPage = 50;
@@ -238,6 +263,7 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
             { id: 'crops', label: 'Cultures' },
             { id: 'formulas', label: 'Formules Rapides' },
             { id: 'evaluations', label: 'Modèles Bio-Agresseurs' },
+            { id: 'categories', label: 'Catégories (Recommandations)' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -539,6 +565,29 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+          {/* CATEGORIES TAB */}
+          {activeTab === 'categories' && (
+            <div>
+               <div className="flex space-x-2 mb-6">
+                <input 
+                  type="text" 
+                  placeholder="Nouvelle catégorie (ex: Nutrition)" 
+                  value={newCategoryName} 
+                  onChange={e => setNewCategoryName(e.target.value)}
+                  className="border p-2 rounded text-sm w-64"
+                />
+                <button onClick={handleSaveCategory} className="bg-[#344E41] text-white px-4 py-2 rounded text-sm">Ajouter</button>
+               </div>
+               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                 {categories.map(c => (
+                   <div key={c.id} className="border rounded-lg p-3 flex justify-between items-center bg-[#F9F8F5]">
+                     <span className="font-bold text-[#344E41]">{c.name}</span>
+                     <button onClick={() => handleDeleteCategory(c.id)} className="text-red-500"><Trash2 className="w-4 h-4"/></button>
+                   </div>
+                 ))}
+               </div>
             </div>
           )}
 
