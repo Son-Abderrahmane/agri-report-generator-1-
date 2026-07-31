@@ -7,7 +7,7 @@ import { FarmDetailsEditor } from './components/FarmDetailsEditor';
 import { DiagnosticSummaryEditor } from './components/DiagnosticSummaryEditor';
 import { ObservationsSection } from './components/ObservationsSection';
 import { PhytosanitaryTableEditor } from './components/PhytosanitaryTableEditor';
-import { FertigationTableEditor } from './components/FertigationTableEditor';
+import { OptimizationEngine } from './components/FertigationOptimizer/OptimizationEngine';
 import { CustomTablesSection } from './components/CustomTablesSection';
 import { RecommendationsEditor } from './components/RecommendationsEditor';
 import { FooterSignoffEditor } from './components/FooterSignoffEditor';
@@ -402,11 +402,18 @@ export default function App() {
               onChange={(phytosanitaryTable) => setReport({ ...report, phytosanitaryTable })}
             />
 
-            {/* 6. Weekly Fertigation Program */}
-            <FertigationTableEditor
-              table={report.fertigationTable}
-              onChange={(fertigationTable) => setReport({ ...report, fertigationTable })}
-            />
+            {/* 6. Moteur d'Optimisation de Fertigation */}
+            <div className="mb-6">
+              <h3 className="font-serif italic font-bold text-lg text-[#344E41] uppercase tracking-wider mb-3">
+                6. Programme d'Irrigation & Fertigation Optimisé
+              </h3>
+              <OptimizationEngine
+                apiBase={API_BASE}
+                token={authToken || ''}
+                results={report.optimizationResults}
+                onSaveResults={(res) => setReport({ ...report, optimizationResults: res })}
+              />
+            </div>
 
             {/* 7. Dynamic Custom Tables */}
             <CustomTablesSection

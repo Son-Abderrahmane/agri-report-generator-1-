@@ -12,7 +12,7 @@ interface OptimizerLayoutProps {
 }
 
 export const OptimizerLayout: React.FC<OptimizerLayoutProps> = ({ apiBase, token }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'fertilizers' | 'stages' | 'water' | 'soil' | 'engine' | 'reports'>('engine');
+  const [activeTab, setActiveTab] = useState<'fertilizers' | 'stages' | 'water' | 'soil' | 'reports'>('fertilizers');
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-[#EBE9E1] p-5 sm:p-6 mb-6">
@@ -35,7 +35,6 @@ export const OptimizerLayout: React.FC<OptimizerLayoutProps> = ({ apiBase, token
       {/* Tabs */}
       <div className="flex overflow-x-auto space-x-2 pb-2 mb-6 scrollbar-hide">
         {[
-          { id: 'engine', label: 'Optimiseur', icon: <LineChart className="w-4 h-4" /> },
           { id: 'fertilizers', label: 'Engrais & Acides', icon: <Beaker className="w-4 h-4" /> },
           { id: 'stages', label: 'Stades Végétatifs', icon: <Sprout className="w-4 h-4" /> },
           { id: 'water', label: 'Analyse d\'Eau', icon: <Droplets className="w-4 h-4" /> },
@@ -59,9 +58,6 @@ export const OptimizerLayout: React.FC<OptimizerLayoutProps> = ({ apiBase, token
 
       {/* Content Area */}
       <div className="min-h-[400px]">
-        {activeTab === 'engine' && (
-          <OptimizationEngine apiBase={apiBase} token={token} />
-        )}
         {activeTab === 'fertilizers' && (
           <FertilizersManager apiBase={apiBase} token={token} />
         )}

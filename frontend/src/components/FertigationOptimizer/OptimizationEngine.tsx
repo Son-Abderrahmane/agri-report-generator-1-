@@ -5,9 +5,11 @@ import { Play, Settings, Droplets, FlaskConical, Beaker, CheckCircle, Layers } f
 interface OptimizationEngineProps {
   apiBase: string;
   token: string;
+  results?: any;
+  onSaveResults?: (res: any) => void;
 }
 
-export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase, token }) => {
+export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase, token, results, onSaveResults }) => {
   const [fertilizers, setFertilizers] = useState<OptimizerFertilizer[]>([]);
   const [stages, setStages] = useState<OptimizerGrowthStage[]>([]);
   const [waterAnalyses, setWaterAnalyses] = useState<OptimizerWaterAnalysis[]>([]);
@@ -19,8 +21,14 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
   const [selectedSoilId, setSelectedSoilId] = useState<number | null>(null);
   const [volume, setVolume] = useState<number>(10000); // L
   
-  const [results, setResults] = useState<any>(null);
+  const [localResults, setLocalResults] = useState<any>(results || null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (results) {
+      setLocalResults(results);
+    }
+  }, [results]);
 
   useEffect(() => {
     fetchData();
@@ -73,7 +81,11 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
         })
       });
       if (res.ok) {
-        setResults(await res.json());
+        const data = await res.json();
+        setLocalResults(data);
+        if (onSaveResults) {
+          onSaveResults(data);
+        }
       } else {
         const err = await res.json();
         alert('Erreur: ' + (err.message || 'Échec de l\'optimisation'));
@@ -165,18 +177,18 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
         </div>
       </div>
 
-      {results && (
+      {localResults && (
         <div className="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm space-y-6">
           <div className="flex justify-between items-center border-b border-gray-100 pb-3">
             <h4 className="font-bold text-[#344E41] font-serif text-lg">Résultats de l'Optimisation</h4>
             <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1"/> Succès</span>
           </div>
 
-          {results.warnings && results.warnings.length > 0 && (
+          {localResults.warnings && localResults.warnings.length > 0 && (
             <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
               <h5 className="text-sm font-bold text-amber-800 mb-1">Avertissements Agronomiques</h5>
               <ul className="list-disc pl-5 text-xs text-amber-700 space-y-1">
-                {results.warnings.map((w: string, i: number) => <li key={i}>{w}</li>)}
+                {localResults.warnings.map((w: string, i: number) => <li key={i}>{w}</li>)}
               </ul>
             </div>
           )}
@@ -189,12 +201,12 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
                   <tr className="border-b border-gray-100"><th className="pb-2">Engrais</th><th className="pb-2 text-right">Quantité</th></tr>
                 </thead>
                 <tbody>
-                  {results.doses.map((d: any, i: number) => (
+                  {localResults.doses.map((d: any, i: number) => (
                     <tr key={i} className="border-b border-gray-50"><td className="py-2 font-medium">{d.name}</td><td className="py-2 text-right font-mono font-bold text-[#344E41]">{d.amount_kg.toFixed(2)} kg</td></tr>
                   ))}
                 </tbody>
               </table>
-              <div className="mt-3 text-right text-xs font-bold text-gray-500">Coût estimé: {results.total_cost.toFixed(2)} DH</div>
+              <div className="mt-3 text-right text-xs font-bold text-gray-500">Coût estimé: {localResults.total_cost.toFixed(2)} DH</div>
             </div>
 
             <div>
@@ -202,13 +214,13 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
               <div className="space-y-3">
                 <div className="bg-red-50 p-3 rounded-xl border border-red-100">
                   <h6 className="text-xs font-bold text-red-800 mb-1">BAC A (Calcium / Nitrates)</h6>
-                  <ul className="text-xs text-red-700 space-y-1">{results.tanks['Tank A'].map((t: any, i: number) => <li key={i}>• {t.amount_kg.toFixed(2)} kg - {t.name}</li>)}</ul>
-                  {results.tanks['Tank A'].length === 0 && <span className="text-xs text-red-400 italic">Vide</span>}
+                  <ul className="text-xs text-red-700 space-y-1">{localResults.tanks['Tank A'].map((t: any, i: number) => <li key={i}>• {t.amount_kg.toFixed(2)} kg - {t.name}</li>)}</ul>
+                  {localResults.tanks['Tank A'].length === 0 && <span className="text-xs text-red-400 italic">Vide</span>}
                 </div>
                 <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
                   <h6 className="text-xs font-bold text-blue-800 mb-1">BAC B (Phosphates / Sulfates)</h6>
-                  <ul className="text-xs text-blue-700 space-y-1">{results.tanks['Tank B'].map((t: any, i: number) => <li key={i}>• {t.amount_kg.toFixed(2)} kg - {t.name}</li>)}</ul>
-                  {results.tanks['Tank B'].length === 0 && <span className="text-xs text-blue-400 italic">Vide</span>}
+                  <ul className="text-xs text-blue-700 space-y-1">{localResults.tanks['Tank B'].map((t: any, i: number) => <li key={i}>• {t.amount_kg.toFixed(2)} kg - {t.name}</li>)}</ul>
+                  {localResults.tanks['Tank B'].length === 0 && <span className="text-xs text-blue-400 italic">Vide</span>}
                 </div>
               </div>
             </div>
@@ -218,20 +230,20 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
             <h5 className="font-bold text-[#344E41] mb-3">Couverture Nutritionnelle (PPM)</h5>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
               {['n', 'p', 'k', 'ca', 'mg', 's'].map(n => {
-                const achieved = results.achieved[n] || 0;
-                const target = results.net_targets[n] || 1; // avoid /0
+                const achieved = localResults.achieved[n] || 0;
+                const target = localResults.net_targets[n] || 1; // avoid /0
                 const percent = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 100;
                 return (
                   <div key={n} className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
                     <span className="block text-xs font-bold text-gray-500 uppercase mb-1">{n}</span>
-                    <span className="block font-mono text-lg font-bold text-[#344E41]">{achieved.toFixed(0)} <span className="text-xs font-normal text-gray-400">/ {results.net_targets[n]?.toFixed(0) || 0}</span></span>
+                    <span className="block font-mono text-lg font-bold text-[#344E41]">{achieved.toFixed(0)} <span className="text-xs font-normal text-gray-400">/ {localResults.net_targets[n]?.toFixed(0) || 0}</span></span>
                     <div className="w-full bg-gray-200 h-1.5 rounded-full mt-2 overflow-hidden flex">
                       {/* Water contribution */}
-                      <div className="h-full bg-blue-400 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json?.water?.[n] || 0) / target) * 100 : 0}%`}}></div>
+                      <div className="h-full bg-blue-400 opacity-50" style={{width: `${target > 0 ? ((localResults.inputs_json?.water?.[n] || 0) / target) * 100 : 0}%`}}></div>
                       {/* Soil contribution */}
-                      <div className="h-full bg-amber-600 opacity-50" style={{width: `${target > 0 ? ((results.inputs_json?.available_soil_nutrients?.[n] || 0) / target) * 100 : 0}%`}}></div>
+                      <div className="h-full bg-amber-600 opacity-50" style={{width: `${target > 0 ? ((localResults.inputs_json?.available_soil_nutrients?.[n] || 0) / target) * 100 : 0}%`}}></div>
                       {/* Fertilizer contribution */}
-                      <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${target > 0 ? ((achieved - (results.inputs_json?.water?.[n] || 0) - (results.inputs_json?.available_soil_nutrients?.[n] || 0)) / target) * 100 : 0}%`}}></div>
+                      <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${target > 0 ? ((achieved - (localResults.inputs_json?.water?.[n] || 0) - (localResults.inputs_json?.available_soil_nutrients?.[n] || 0)) / target) * 100 : 0}%`}}></div>
                     </div>
                   </div>
                 )

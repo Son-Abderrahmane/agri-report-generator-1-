@@ -114,7 +114,7 @@ export interface Report {
   diagnosticSummary: string;
   observations: ObservationPhoto[];
   phytosanitaryTable: PhytosanitaryTable;
-  fertigationTable: FertigationTable;
+  optimizationResults?: any; // To hold the Optimization Engine output
   customTables: CustomTable[];
   recommendations: RecommendationItem[];
   footer: FooterSignoff;

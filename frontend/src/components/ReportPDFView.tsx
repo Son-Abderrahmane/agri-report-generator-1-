@@ -209,7 +209,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
     diagnosticSummary,
     observations,
     phytosanitaryTable,
-    fertigationTable,
+    optimizationResults,
     customTables,
     recommendations,
     footer,
@@ -467,40 +467,87 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
           </section>
         )}
 
-        {/* 6. Fertigation Program Table */}
-        {fertigationTable && fertigationTable.rows.length > 0 && (
-          <section className="mb-6">
+        {/* 6. Fertigation Program Table (Optimized) */}
+        {optimizationResults && (
+          <section className="mb-6 page-break-inside-avoid">
             <div className="flex items-center justify-between mb-2 pb-1 border-b-2 border-[#344E41]">
               <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider">
-                {fertigationTable.title || 'Programme Hebdomadaire de Fertigation'}
+                Programme Hebdomadaire de Fertigation Optimisé
               </h3>
-              <div className="text-[11px] font-bold text-[#344E41] bg-[#E9EDC9] px-2.5 py-0.5 rounded-lg border border-[#CCD5AE] space-x-3">
-                <span>Cible EC: <strong>{fertigationTable.ecTarget || '-'} mS/cm</strong></span>
-                <span>•</span>
-                <span>Cible pH: <strong>{fertigationTable.phTarget || '-'}</strong></span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Doses Requises (kg)</h5>
+                <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1]">
+                  <thead>
+                    <tr className="bg-[#5A6352] text-[#E9EDC9]">
+                      <th className="p-1.5 border border-[#5A6352]">Engrais</th>
+                      <th className="p-1.5 border border-[#5A6352] text-right">Quantité</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EBE9E1]">
+                    {optimizationResults.doses?.map((d: any, i: number) => (
+                      <tr key={i} className="even:bg-[#F9F8F5]">
+                        <td className="p-1.5 border border-[#EBE9E1] font-bold text-[#344E41]">{d.name}</td>
+                        <td className="p-1.5 border border-[#EBE9E1] text-right font-mono font-bold text-[#344E41]">{d.amount_kg.toFixed(2)} kg</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div>
+                <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Préparation des Bacs Concentrés (A/B)</h5>
+                <div className="space-y-2">
+                  <div className="bg-red-50 p-2 rounded-xl border border-red-100">
+                    <h6 className="text-[10px] font-bold text-red-800 mb-1">BAC A (Calcium / Nitrates)</h6>
+                    <ul className="text-[10px] text-red-700 space-y-0.5 pl-2">
+                      {optimizationResults.tanks?.['Tank A']?.map((t: any, i: number) => (
+                        <li key={i}>• <span className="font-mono font-bold">{t.amount_kg.toFixed(2)} kg</span> - {t.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-blue-50 p-2 rounded-xl border border-blue-100">
+                    <h6 className="text-[10px] font-bold text-blue-800 mb-1">BAC B (Phosphates / Sulfates)</h6>
+                    <ul className="text-[10px] text-blue-700 space-y-0.5 pl-2">
+                      {optimizationResults.tanks?.['Tank B']?.map((t: any, i: number) => (
+                        <li key={i}>• <span className="font-mono font-bold">{t.amount_kg.toFixed(2)} kg</span> - {t.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1] mb-2">
-              <thead>
-                <tr className="bg-[#5A6352] text-[#E9EDC9] font-bold">
-                  <th className="p-2 border border-[#5A6352]">Engrais / Nutriments</th>
-                  <th className="p-2 border border-[#5A6352] text-center">Quotidien (kg/ha/j)</th>
-                  <th className="p-2 border border-[#5A6352] text-center">Total Hebdo (kg/ha)</th>
-                  <th className="p-2 border border-[#5A6352]">Rôle Agronomique & Directives</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#EBE9E1]">
-                {fertigationTable.rows.map((row) => (
-                  <tr key={row.id} className="even:bg-[#F9F8F5]">
-                    <td className="p-2 border border-[#EBE9E1] font-bold text-[#344E41]">{row.fertilizer}</td>
-                    <td className="p-2 border border-[#EBE9E1] text-center font-mono font-bold text-[#344E41]">{row.dailyDose}</td>
-                    <td className="p-2 border border-[#EBE9E1] text-center font-mono font-black text-[#344E41] bg-[#E9EDC9]/50">{row.weeklyTotal}</td>
-                    <td className="p-2 border border-[#EBE9E1] text-[#5A6352]">{row.roleDirectives}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div>
+              <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Couverture Nutritionnelle (PPM)</h5>
+              <div className="grid grid-cols-6 gap-2">
+                {['n', 'p', 'k', 'ca', 'mg', 's'].map(n => {
+                  const achieved = optimizationResults.achieved?.[n] || 0;
+                  const target = optimizationResults.net_targets?.[n] || 1;
+                  const percent = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 100;
+                  return (
+                    <div key={n} className="bg-gray-50 p-1.5 rounded-lg border border-gray-100 text-center">
+                      <span className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">{n}</span>
+                      <span className="block font-mono text-[11px] font-bold text-[#344E41]">
+                        {achieved.toFixed(0)} <span className="text-[9px] font-normal text-gray-400">/ {optimizationResults.net_targets?.[n]?.toFixed(0) || 0}</span>
+                      </span>
+                      <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1.5 overflow-hidden flex">
+                        <div className="h-full bg-blue-400 opacity-50" style={{width: `${target > 0 ? ((optimizationResults.inputs_json?.water?.[n] || 0) / target) * 100 : 0}%`}}></div>
+                        <div className="h-full bg-amber-600 opacity-50" style={{width: `${target > 0 ? ((optimizationResults.inputs_json?.available_soil_nutrients?.[n] || 0) / target) * 100 : 0}%`}}></div>
+                        <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${target > 0 ? ((achieved - (optimizationResults.inputs_json?.water?.[n] || 0) - (optimizationResults.inputs_json?.available_soil_nutrients?.[n] || 0)) / target) * 100 : 0}%`}}></div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="mt-2 text-right text-[9px] text-gray-500 flex justify-end items-center space-x-3">
+                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-blue-400 opacity-50 inline-block"></span><span>Eau</span></span>
+                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-amber-600 opacity-50 inline-block"></span><span>Sol</span></span>
+                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span>Engrais</span></span>
+              </div>
+            </div>
           </section>
         )}
 
