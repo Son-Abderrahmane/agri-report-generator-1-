@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Crop, Pesticide, QuickFormula, EvaluationTemplate, RecommendationCategory } from '../types';
 import { Settings, Save, Plus, Trash2, Edit2, ShieldAlert, Loader2, RefreshCw } from 'lucide-react';
+import { toast } from '../utils/toast';
 
 interface MasterDataSettingsProps {
   apiBase: string;
@@ -58,19 +59,19 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
         // If it's not JSON, it's likely a server HTML error
         const text = await res.text();
         console.error('Non-JSON response from server:', text);
-        alert(`Erreur Serveur: Impossible de lire la réponse (Vérifiez la console). Statut: ${res.status}`);
+        toast(`Erreur Serveur: Impossible de lire la réponse (Vérifiez la console). Statut: ${res.status}`);
         return;
       }
 
       if (res.ok) {
-        alert(data.message || 'Importation réussie');
+        toast(data.message || 'Importation réussie');
         setShowImportZone(false);
         fetchData();
       } else {
-        alert(`Erreur: ${data.error || 'Erreur inconnue'}`);
+        toast(`Erreur: ${data.error || 'Erreur inconnue'}`);
       }
     } catch (err) {
-      alert('Erreur lors de l\'importation');
+      toast('Erreur lors de l\'importation');
     } finally {
       setIsLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -164,14 +165,14 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
       const res = await fetch(`${apiBase}/pesticides/all`, { method: 'DELETE', headers });
       const data = await res.json();
       if (res.ok) {
-        alert(data.message || 'Tous les produits ont été supprimés.');
+        toast(data.message || 'Tous les produits ont été supprimés.');
         fetchData();
       } else {
-        alert(`Erreur: ${data.error || 'Erreur inconnue'}`);
+        toast(`Erreur: ${data.error || 'Erreur inconnue'}`);
         setIsLoading(false);
       }
     } catch (err) {
-      alert('Erreur lors de la suppression');
+      toast('Erreur lors de la suppression');
       setIsLoading(false);
     }
   };

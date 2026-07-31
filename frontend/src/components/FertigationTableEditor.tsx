@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from '../utils/toast';
 import { FertigationTable, FertigationRow } from '../types';
 import { Droplets, Plus, Trash2, Calculator, Gauge, Sparkles } from 'lucide-react';
 
@@ -158,11 +159,11 @@ export const FertigationTableEditor: React.FC<FertigationTableEditorProps> = ({
         });
         setShowEngine(false);
       } else {
-        alert("Erreur de calcul.");
+        toast("Erreur de calcul.");
       }
     } catch (e) {
       console.error(e);
-      alert("Erreur de connexion au moteur de calcul.");
+      toast("Erreur de connexion au moteur de calcul.");
     } finally {
       setIsCalculating(false);
     }
@@ -208,7 +209,7 @@ export const FertigationTableEditor: React.FC<FertigationTableEditorProps> = ({
 
       {showEngine && (
         <div className="bg-[#F9F8F5] border border-[#CCD5AE] rounded-xl p-4 mb-4">
-          <h4 className="text-sm font-bold text-[#344E41] mb-3 flex items-center"><Calculator className="w-4 h-4 mr-1"/> Configuration Hydrobuddy</h4>
+          <h4 className="text-sm font-bold text-[#344E41] mb-3 flex items-center"><Calculator className="w-4 h-4 mr-1"/> Configuration </h4>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>

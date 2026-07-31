@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from '../../utils/toast';
 import { OptimizerWaterAnalysis } from '../../types';
 import { Save, Droplets } from 'lucide-react';
 
@@ -61,7 +62,7 @@ export const WaterAnalysisManager: React.FC<WaterAnalysisManagerProps> = ({ apiB
       if (res.ok) {
         const saved = await res.json();
         setAnalysis(saved);
-        alert('Analyse d\'eau sauvegardée.');
+        toast('Analyse d\'eau sauvegardée.');
       }
     } catch (e) {
       console.error(e);

@@ -23,7 +23,7 @@ export const OptimizerLayout: React.FC<OptimizerLayoutProps> = ({ apiBase, token
           </div>
           <div>
             <h3 className="font-serif italic font-bold text-[#344E41] text-xl">
-              Moteur d'Optimisation HydroBuddy
+              Moteur d'Optimisation 
             </h3>
             <p className="text-xs text-[#8C8F85]">
               Formulation et calcul des solutions nutritives & Bacs A/B

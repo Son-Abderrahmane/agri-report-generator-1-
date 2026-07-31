@@ -48,10 +48,16 @@ export default function App() {
       setIsOnline(true);
       syncOfflineReports();
     };
-    const handleOffline = () => setIsOnline(false);
+    const handleToastEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        showToast(customEvent.detail);
+      }
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('app-toast', handleToastEvent);
 
     if (navigator.onLine) {
       syncOfflineReports();
@@ -60,6 +66,7 @@ export default function App() {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('app-toast', handleToastEvent);
     };
   }, []);
 

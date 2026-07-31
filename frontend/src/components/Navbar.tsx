@@ -49,30 +49,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & App Name */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="hidden sm:flex bg-[#A3B18A] p-2 rounded-xl text-[#344E41] font-black items-center justify-center shadow-inner">
+            <div className="flex bg-[#A3B18A] p-2 rounded-xl text-[#344E41] font-black items-center justify-center shadow-inner">
               <Sparkles className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-serif italic font-bold tracking-wide text-lg sm:text-xl text-[#E9EDC9]">
-                  AgriReport
-                </span>
-                <span className="hidden sm:inline-block bg-[#344E41] text-[#E9EDC9] text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border border-white/10">
-                  v2.0 Expert
-                </span>
-                {isOnline ? (
-                  <div className="flex items-center space-x-1 bg-green-500/20 text-green-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-green-500/30" title="Connecté - Sauvegarde Automatique">
-                    <Wifi className="w-3 h-3" />
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-1 bg-red-500/20 text-red-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-red-500/30 animate-pulse" title="Hors-Ligne - Sauvegarde Locale">
-                    <WifiOff className="w-3 h-3" />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-white/70 line-clamp-1 max-w-[180px] sm:max-w-xs font-medium">
-                {reportTitle || 'Rapport de Visite Technique'}
-              </p>
+            <div className="flex items-center">
+              {isOnline ? (
+                <div className="flex items-center space-x-1 bg-green-500/20 text-green-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-green-500/30" title="Connecté - Sauvegarde Automatique">
+                  <Wifi className="w-3 h-3" />
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1 bg-red-500/20 text-red-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-red-500/30 animate-pulse" title="Hors-Ligne - Sauvegarde Locale">
+                  <WifiOff className="w-3 h-3" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -123,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>Optimiseur HydroBuddy</span>
+              <span>Optimiseur </span>
             </button>
 
             <button

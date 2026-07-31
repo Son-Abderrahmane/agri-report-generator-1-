@@ -1,4 +1,5 @@
 import { Report } from '../types';
+import { toast } from '../utils/toast';
 import { generatePDF } from '../services/pdf/PdfRenderer';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
@@ -56,7 +57,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 
     } catch (err) {
       console.error('PDF Generation Error:', err);
-      alert('La génération directe a échoué. Veuillez vérifier la console.');
+      toast('La génération directe a échoué. Veuillez vérifier la console.');
     } finally {
       setIsGenerating(false);
     }

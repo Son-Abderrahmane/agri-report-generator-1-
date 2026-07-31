@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from '../utils/toast';
 import {
   Stethoscope,
   Sparkles,
@@ -184,7 +185,7 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
 
   const handleGeolocate = () => {
     if (!navigator.geolocation) {
-      alert('La géolocalisation n\'est pas supportée par votre navigateur.');
+      toast('La géolocalisation n\'est pas supportée par votre navigateur.');
       return;
     }
     setIsLoading(true);
@@ -201,7 +202,7 @@ export const DiagnosticSummaryEditor: React.FC<DiagnosticSummaryEditorProps> = (
       },
       (err) => {
         console.warn('Geolocation error:', err);
-        alert('Impossible de récupérer la position GPS actuelle.');
+        toast('Impossible de récupérer la position GPS actuelle.');
         setIsLoading(false);
       }
     );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from '../../utils/toast';
 import { OptimizerFertilizer, OptimizerGrowthStage, OptimizerWaterAnalysis, OptimizerSoilAnalysis } from '../../types';
 import { Play, Settings, Droplets, FlaskConical, Beaker, CheckCircle, Layers } from 'lucide-react';
 
@@ -60,8 +61,8 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
   };
 
   const handleRun = async () => {
-    if (!selectedRecipeId) return alert('Veuillez sélectionner une recette (stade).');
-    if (selectedFertilizers.length === 0) return alert('Veuillez sélectionner au moins un engrais.');
+    if (!selectedRecipeId) return toast('Veuillez sélectionner une recette (stade).');
+    if (selectedFertilizers.length === 0) return toast('Veuillez sélectionner au moins un engrais.');
 
     setIsLoading(true);
     try {
@@ -88,7 +89,7 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
         }
       } else {
         const err = await res.json();
-        alert('Erreur: ' + (err.message || 'Échec de l\'optimisation'));
+        toast('Erreur: ' + (err.message || 'Échec de l\'optimisation'));
       }
     } catch (e) {
       console.error(e);
