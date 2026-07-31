@@ -70,27 +70,7 @@ export const createNewReport = (templateId?: string): Report => {
           }
         ]
       },
-      fertigationTable: {
-        title: 'Programme d\'Irrigation & Fertigation',
-        ecTarget: '2.2 - 2.5',
-        phTarget: '5.6 - 5.9',
-        rows: [
-          {
-            id: 'fer_t1',
-            fertilizer: 'Nitrate de Potassium (13-0-46)',
-            dailyDose: 20,
-            weeklyTotal: 140,
-            roleDirectives: 'Soutien de la coloration et ferme du fruit.',
-          },
-          {
-            id: 'fer_t2',
-            fertilizer: 'Sulfate de Magnésium (16% MgO)',
-            dailyDose: 6,
-            weeklyTotal: 42,
-            roleDirectives: 'Prévention de la chlorose internervaire.',
-          }
-        ]
-      },
+      optimizationResults: null,
       customTables: [],
       recommendations: [
         { id: 'rec_t1', text: 'Renforcer l\'étanchéité des filets anti-insectes sur les ouvrants latéraux.' },
@@ -175,34 +155,7 @@ export const createNewReport = (templateId?: string): Report => {
         }
       ]
     },
-    fertigationTable: {
-      title: 'Programme Hebdomadaire de Fertigation',
-      ecTarget: '1.8 - 2.0',
-      phTarget: '5.8 - 6.2',
-      rows: [
-        {
-          id: 'fer_1',
-          fertilizer: 'Nitrate de Calcium (15.5-0-0 + 26 CaO)',
-          dailyDose: 12.0,
-          weeklyTotal: 84.0,
-          roleDirectives: 'Apport azoté & renforcement des parois cellulaires des fruits',
-        },
-        {
-          id: 'fer_2',
-          fertilizer: 'Nitrate de Potassium (13-0-46)',
-          dailyDose: 18.0,
-          weeklyTotal: 126.0,
-          roleDirectives: 'Soutien du grossissement du fruit & qualité organoleptique',
-        },
-        {
-          id: 'fer_3',
-          fertilizer: 'Acide Phosphorique (85%)',
-          dailyDose: 2.5,
-          weeklyTotal: 17.5,
-          roleDirectives: 'Régulation du pH de la solution fille & nutrition P',
-        }
-      ]
-    },
+    optimizationResults: null,
     customTables: [],
     recommendations: [
       { id: 'rec_1', text: 'Aérer les serres dès 08h00 du matin pour réduire le taux d\'hygrométrie relative à moins de 85%.' },
