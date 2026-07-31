@@ -279,4 +279,35 @@ class MasterDataController extends Controller
         EvaluationTemplate::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted successfully']);
     }
+
+    // --- Recommendation Categories ---
+    public function getRecommendationCategories()
+    {
+        return response()->json(\App\Models\RecommendationCategory::all());
+    }
+
+    public function storeRecommendationCategory(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|unique:recommendation_categories'
+        ]);
+        $category = \App\Models\RecommendationCategory::create($validated);
+        return response()->json($category, 201);
+    }
+
+    public function updateRecommendationCategory(Request $request, $id)
+    {
+        $category = \App\Models\RecommendationCategory::findOrFail($id);
+        $validated = $request->validate([
+            'name' => 'required|string|unique:recommendation_categories,name,' . $id
+        ]);
+        $category->update($validated);
+        return response()->json($category);
+    }
+
+    public function destroyRecommendationCategory($id)
+    {
+        \App\Models\RecommendationCategory::findOrFail($id)->delete();
+        return response()->json(['message' => 'Deleted successfully']);
+    }
 }

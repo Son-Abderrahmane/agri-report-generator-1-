@@ -58,4 +58,9 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/evaluation-templates', [MasterDataController::class, 'storeEvaluationTemplate']);
     Route::put('/evaluation-templates/{id}', [MasterDataController::class, 'updateEvaluationTemplate']);
     Route::delete('/evaluation-templates/{id}', [MasterDataController::class, 'destroyEvaluationTemplate']);
+
+    Route::get('/recommendation-categories', [MasterDataController::class, 'getRecommendationCategories']);
+    Route::post('/recommendation-categories', [MasterDataController::class, 'storeRecommendationCategory']);
+    Route::put('/recommendation-categories/{id}', [MasterDataController::class, 'updateRecommendationCategory']);
+    Route::delete('/recommendation-categories/{id}', [MasterDataController::class, 'destroyRecommendationCategory']);
 });
