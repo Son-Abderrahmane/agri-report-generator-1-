@@ -123,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>Optimiseur HydroBuddy</span>
+              <span>Optimiseur</span>
             </button>
 
             <button
