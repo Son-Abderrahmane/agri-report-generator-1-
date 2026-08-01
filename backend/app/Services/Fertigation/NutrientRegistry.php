@@ -5,22 +5,17 @@ class NutrientRegistry
 {
     /**
      * Get the default sequential priority for nutrients.
-     * Order matters: primary macros, secondary macros, then micros.
+     * Everything is now processed as elements.
      */
     public function getDefaultPriority(): array
     {
         return [
-            'p2o5', // Phosphorus (Oxide)
-            'p',    // Phosphorus (Elemental fallback)
-            'cao',  // Calcium (Oxide)
-            'ca',   // Calcium (Elemental fallback)
-            'k2o',  // Potassium (Oxide)
-            'k',    // Potassium (Elemental fallback)
+            'p',    // Phosphorus
+            'ca',   // Calcium
+            'k',    // Potassium
             'n',    // Nitrogen (Often supplied by Ca, P, K fertilizers, adjusted later)
-            'mgo',  // Magnesium (Oxide)
-            'mg',   // Magnesium (Elemental fallback)
-            'so3',  // Sulfur (Oxide)
-            's',    // Sulfur (Elemental fallback)
+            'mg',   // Magnesium
+            's',    // Sulfur
             'fe',   // Iron
             'mn',   // Manganese
             'zn',   // Zinc
@@ -36,7 +31,7 @@ class NutrientRegistry
      */
     public function isMacro(string $nutrient): bool
     {
-        return in_array(strtolower($nutrient), ['n', 'p', 'p2o5', 'k', 'k2o', 'ca', 'cao', 'mg', 'mgo', 's', 'so3']);
+        return in_array(strtolower($nutrient), ['n', 'p', 'k', 'ca', 'mg', 's']);
     }
 
     /**
@@ -48,16 +43,11 @@ class NutrientRegistry
     }
 
     /**
-     * Define compatible mapping for elements vs oxides to avoid double solving
+     * Oxide map is no longer needed in the solver because all mapping
+     * is handled centrally by the NutrientMapperService before and after optimization.
      */
     public function getOxideMap(): array
     {
-        return [
-            'p' => 'p2o5',
-            'k' => 'k2o',
-            'ca' => 'cao',
-            'mg' => 'mgo',
-            's' => 'so3'
-        ];
+        return [];
     }
 }

@@ -47,8 +47,6 @@ class SequentialUFSolver implements OptimizationServiceInterface
 
         // Step 2: Sequential Calculation
         $priorityList = $this->nutrientRegistry->getDefaultPriority();
-        $oxideMap = $this->nutrientRegistry->getOxideMap();
-        $elementMap = array_flip($oxideMap);
 
         foreach ($priorityList as $nutrient) {
             if ($nutrient === 'n') {
@@ -91,14 +89,6 @@ class SequentialUFSolver implements OptimizationServiceInterface
                                     $contributionUF = $doseKg * ($perc / 100);
                                     $achievedUF[$key] = ($achievedUF[$key] ?? 0) + $contributionUF;
                                     $remainingTargets[$key] = max(0, ($remainingTargets[$key] ?? 0) - $contributionUF);
-                                    
-                                    // if it's an oxide, also reduce the elemental counterpart
-                                    if (isset($elementMap[$key])) {
-                                        $remainingTargets[$elementMap[$key]] = max(0, ($remainingTargets[$elementMap[$key]] ?? 0) - $contributionUF);
-                                    }
-                                    if (isset($oxideMap[$key])) {
-                                        $remainingTargets[$oxideMap[$key]] = max(0, ($remainingTargets[$oxideMap[$key]] ?? 0) - $contributionUF);
-                                    }
                                     
                                     $traceStep['contributions'][$key] = round($contributionUF, 2);
                                 }

@@ -12,18 +12,22 @@ use App\Models\SoilAnalysis;
 use App\Models\OptimizationRun;
 use App\Services\Fertigation\OptimizationServiceInterface;
 use App\Services\Fertigation\SoilAvailabilityService;
+use App\Services\Fertigation\NutrientMapperService;
 
 class FertigationOptimizerController extends Controller
 {
     protected $optimizer;
     protected $soilAvailabilityService;
+    protected $mapper;
 
     public function __construct(
         OptimizationServiceInterface $optimizer,
-        SoilAvailabilityService $soilAvailabilityService
+        SoilAvailabilityService $soilAvailabilityService,
+        NutrientMapperService $mapper
     ) {
         $this->optimizer = $optimizer;
         $this->soilAvailabilityService = $soilAvailabilityService;
+        $this->mapper = $mapper;
     }
 
     // --- Fertilizers ---
@@ -207,6 +211,13 @@ class FertigationOptimizerController extends Controller
 
         $fertilizers = Fertilizer::whereIn('id', $validated['fertilizer_ids'])->get()->toArray();
 
+        // Use Option A: Assume targets entered by users are Oxides mathematically (e.g. Ca=10 means CaO=10)
+        // Convert Targets, Water, Soil, and Fertilizers to strict elements before optimization
+        $elementalTargets = $this->mapper->convertToElements($targets);
+        $elementalWater = $this->mapper->convertToElements($waterAnalysis);
+        $elementalSoil = $this->mapper->convertToElements($availableSoilNutrients);
+        $elementalFertilizers = $this->mapper->convertFertilizersToElements($fertilizers);
+
         $params = [
             'area_ha' => $validated['area_ha'],
             'duration_days' => $validated['duration_days'],
@@ -217,10 +228,20 @@ class FertigationOptimizerController extends Controller
             'objective' => $validated['objective'] ?? 'target_accuracy',
         ];
 
-        $result = $this->optimizer->optimize($targets, $waterAnalysis, $availableSoilNutrients, $fertilizers, $params);
+        // Optimize using elemental structures
+        $result = $this->optimizer->optimize($elementalTargets, $elementalWater, $elementalSoil, $elementalFertilizers, $params);
 
+        // Convert the outputs back to oxides so the frontend displays them correctly
+        if (isset($result['net_targets'])) {
+            $result['net_targets'] = $this->mapper->convertToOxides($result['net_targets']);
+        }
+        if (isset($result['achieved'])) {
+            $result['achieved'] = $this->mapper->convertToOxides($result['achieved']);
+        }
+        // Calculation trace keeps its step names (e.g., "Solve ca") but that's fine for debug info
+        
         $inputs = [
-            'targets' => $targets,
+            'targets' => $targets, // Keep original inputs for history
             'water' => $waterAnalysis,
             'soil_analysis_id' => $validated['soil_analysis_id'] ?? null,
             'available_soil_nutrients' => $availableSoilNutrients,
