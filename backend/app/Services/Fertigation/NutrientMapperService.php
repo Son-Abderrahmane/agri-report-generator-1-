@@ -41,16 +41,20 @@ class NutrientMapperService
         foreach ($nutrients as $key => $value) {
             $keyLower = strtolower($key);
             
-            // If it's an oxide, convert to element
-            if (isset(self::FACTORS[$keyLower])) {
-                $elementKey = self::OXIDE_TO_ELEMENT[$keyLower];
-                $elementValue = $value * self::FACTORS[$keyLower];
-                // Accumulate in case both oxide and element were provided (edge case)
-                $elements[$elementKey] = ($elements[$elementKey] ?? 0) + $elementValue;
+            if (is_numeric($value)) {
+                // If it's an oxide, convert to element
+                if (isset(self::FACTORS[$keyLower])) {
+                    $elementKey = self::OXIDE_TO_ELEMENT[$keyLower];
+                    $elementValue = $value * self::FACTORS[$keyLower];
+                    // Accumulate in case both oxide and element were provided (edge case)
+                    $elements[$elementKey] = ($elements[$elementKey] ?? 0) + $elementValue;
+                } else {
+                    // If it's already an element or something else numeric, pass it through
+                    $elements[$keyLower] = ($elements[$keyLower] ?? 0) + $value;
+                }
             } else {
-                // If it's already an element or something else, pass it through
-                // But map it to its canonical name if needed (e.g. if someone used uppercase)
-                $elements[$keyLower] = ($elements[$keyLower] ?? 0) + $value;
+                // If it's not numeric (e.g. name, unit), just pass it through as is
+                $elements[$keyLower] = $value;
             }
         }
 
@@ -67,15 +71,20 @@ class NutrientMapperService
         foreach ($elements as $key => $value) {
             $keyLower = strtolower($key);
 
-            // If it's an element that has an oxide form, convert it
-            if (isset(self::ELEMENT_TO_OXIDE[$keyLower])) {
-                $oxideKey = self::ELEMENT_TO_OXIDE[$keyLower];
-                $factor = self::FACTORS[$oxideKey];
-                $oxideValue = $value / $factor;
-                $oxides[$oxideKey] = ($oxides[$oxideKey] ?? 0) + $oxideValue;
+            if (is_numeric($value)) {
+                // If it's an element that has an oxide form, convert it
+                if (isset(self::ELEMENT_TO_OXIDE[$keyLower])) {
+                    $oxideKey = self::ELEMENT_TO_OXIDE[$keyLower];
+                    $factor = self::FACTORS[$oxideKey];
+                    $oxideValue = $value / $factor;
+                    $oxides[$oxideKey] = ($oxides[$oxideKey] ?? 0) + $oxideValue;
+                } else {
+                    // E.g., 'n', 'fe', etc. remain unchanged
+                    $oxides[$keyLower] = ($oxides[$keyLower] ?? 0) + $value;
+                }
             } else {
-                // E.g., 'n', 'fe', etc. remain unchanged
-                $oxides[$keyLower] = ($oxides[$keyLower] ?? 0) + $value;
+                // Pass through non-numeric fields
+                $oxides[$keyLower] = $value;
             }
         }
 
