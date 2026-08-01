@@ -150,18 +150,19 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-[#EBE9E1] p-5 sm:p-6 mb-6 transition-all hover:shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-[#EBE9E1] gap-2">
-        <div className="flex items-center space-x-2.5">
-          <div className="p-2 bg-[#E9EDC9] rounded-xl text-[#344E41]">
+        <div className="flex items-center space-x-2.5 flex-1 min-w-0">
+          <div className="p-2 bg-[#E9EDC9] rounded-xl text-[#344E41] flex-shrink-0">
             <Shield className="w-5 h-5" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <input
               type="text"
               value={table.title || 'Programme de Traitement Phytosanitaire'}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="font-serif italic font-bold text-[#344E41] text-base sm:text-lg bg-transparent border-b border-dashed border-[#CCD5AE] focus:border-[#A3B18A] focus:outline-none w-full sm:w-auto"
+              className="font-serif italic font-bold text-[#344E41] text-base sm:text-lg bg-transparent border-b border-dashed border-[#CCD5AE] focus:border-[#A3B18A] focus:outline-none w-full min-w-0 truncate"
+              title={table.title || 'Programme de Traitement Phytosanitaire'}
             />
-            <p className="text-xs text-[#8C8F85]">
+            <p className="text-xs text-[#8C8F85] truncate">
               Préconisations phytosanitaires, doses recommandées et Délais Avant Récolte (DAR)
             </p>
           </div>
@@ -171,7 +172,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
           <select
             value={selectedCrop}
             onChange={(e) => setSelectedCrop(e.target.value)}
-            className="text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
+            className="text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all"
           >
             <option value="">Filtre Culture (Toutes)</option>
             {uniqueCrops.map(c => <option key={c} value={c}>{c}</option>)}
@@ -217,7 +218,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                     <select
                       value={row.target}
                       onChange={(e) => handleUpdateRow(row.id, 'target', e.target.value)}
-                      className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
+                      className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all"
                     >
                       <option value="">Sélectionner Cible...</option>
                       {uniqueTargets.map(t => (
@@ -240,7 +241,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                     <select
                       value={row.activeIngredient}
                       onChange={(e) => handleUpdateRow(row.id, 'activeIngredient', e.target.value)}
-                      className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
+                      className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!row.target}
                     >
                       <option value="">Matière Active...</option>
@@ -255,7 +256,7 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                     <select
                       value={row.product}
                       onChange={(e) => handleUpdateRow(row.id, 'product', e.target.value)}
-                      className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-2.5 py-1.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
+                      className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!row.activeIngredient}
                     >
                       <option value="">Sélectionner Produit...</option>
