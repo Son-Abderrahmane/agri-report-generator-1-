@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OptimizerGrowthStage } from '../../types';
 import { confirmAlert } from '../../utils/confirm';
-import { Plus, Sprout, Trash2 } from 'lucide-react';
+import { Plus, Sprout, Trash2, Pencil } from 'lucide-react';
 import { GrowthStageFormModal } from './GrowthStageFormModal';
 
 interface GrowthStagesManagerProps {
@@ -13,6 +13,7 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
   const [stages, setStages] = useState<OptimizerGrowthStage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStage, setEditingStage] = useState<OptimizerGrowthStage | null>(null);
 
   useEffect(() => {
     fetchStages();
@@ -36,8 +37,12 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
 
   const handleSave = async (stage: Partial<OptimizerGrowthStage>) => {
     try {
-      const res = await fetch(`${apiBase}/optimizer/growth-stages`, {
-        method: 'POST',
+      const isEdit = !!stage.id;
+      const url = isEdit ? `${apiBase}/optimizer/growth-stages/${stage.id}` : `${apiBase}/optimizer/growth-stages`;
+      const method = isEdit ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -46,6 +51,7 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
       });
       if (res.ok) {
         setIsModalOpen(false);
+        setEditingStage(null);
         fetchStages();
       }
     } catch (e) {
@@ -73,7 +79,7 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
           <Sprout className="w-5 h-5 text-[#344E41]" />
           <h4 className="font-bold text-[#344E41] font-serif">Stades Végétatifs & Recettes</h4>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#D4A373] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[#c29363]">
+        <button onClick={() => { setEditingStage(null); setIsModalOpen(true); }} className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#D4A373] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[#c29363]">
           <Plus className="w-4 h-4" />
           <span>Nouveau Stade</span>
         </button>
@@ -95,7 +101,10 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
                     <h5 className="font-bold text-[#344E41]">Etape {idx + 1} : {stage.name}</h5>
                     <p className="text-xs text-gray-500 mb-3">{stage.duration_days} jours | EC: {stage.target_ec_min}-{stage.target_ec_max} | pH: {stage.target_ph_min}-{stage.target_ph_max}</p>
                   </div>
-                  <button onClick={() => handleDelete(stage.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 className="w-4 h-4"/></button>
+                  <div className="flex space-x-1">
+                    <button onClick={() => { setEditingStage(stage); setIsModalOpen(true); }} className="text-blue-400 hover:text-blue-600 p-1"><Pencil className="w-4 h-4"/></button>
+                    <button onClick={() => handleDelete(stage.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 className="w-4 h-4"/></button>
+                  </div>
                 </div>
                 <div className="pl-4 border-l-2 border-[#E9EDC9]">
                   {stage.recipes && stage.recipes.map(recipe => (
@@ -118,7 +127,7 @@ export const GrowthStagesManager: React.FC<GrowthStagesManagerProps> = ({ apiBas
       )}
 
       {isModalOpen && (
-        <GrowthStageFormModal apiBase={apiBase} token={token} onClose={() => setIsModalOpen(false)} onSave={handleSave} />
+        <GrowthStageFormModal apiBase={apiBase} token={token} stage={editingStage} onClose={() => { setIsModalOpen(false); setEditingStage(null); }} onSave={handleSave} />
       )}
     </div>
   );

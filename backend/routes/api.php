@@ -47,6 +47,7 @@ Route::middleware(['admin.auth'])->group(function () {
 
     Route::get('/optimizer/growth-stages', [FertigationOptimizerController::class, 'getGrowthStages']);
     Route::post('/optimizer/growth-stages', [FertigationOptimizerController::class, 'createGrowthStage']);
+    Route::put('/optimizer/growth-stages/{id}', [FertigationOptimizerController::class, 'updateGrowthStage']);
     Route::delete('/optimizer/growth-stages/{id}', [FertigationOptimizerController::class, 'deleteGrowthStage']);
     
     Route::get('/optimizer/water-analyses', [FertigationOptimizerController::class, 'getWaterAnalyses']);

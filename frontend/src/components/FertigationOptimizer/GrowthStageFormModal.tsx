@@ -5,20 +5,22 @@ import { X, Save, Plus, Trash2 } from 'lucide-react';
 interface GrowthStageFormModalProps {
   apiBase: string;
   token: string;
+  stage?: OptimizerGrowthStage | null;
   onClose: () => void;
   onSave: (stage: Partial<OptimizerGrowthStage>) => void;
 }
 
-export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ apiBase, token, onClose, onSave }) => {
+export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ apiBase, token, stage, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<OptimizerGrowthStage>>({
-    name: '',
-    crop_id: 1, // Default crop
-    duration_days: 14,
-    target_ec_min: 1.5,
-    target_ec_max: 2.0,
-    target_ph_min: 5.5,
-    target_ph_max: 6.5,
-    order_index: 1,
+    id: stage?.id,
+    name: stage?.name || '',
+    crop_id: stage?.crop_id || 1, // Default crop
+    duration_days: stage?.duration_days || 14,
+    target_ec_min: stage?.target_ec_min || 1.5,
+    target_ec_max: stage?.target_ec_max || 2.0,
+    target_ph_min: stage?.target_ph_min || 5.5,
+    target_ph_max: stage?.target_ph_max || 6.5,
+    order_index: stage?.order_index || 1,
   });
 
   const [crops, setCrops] = useState<any[]>([]);
@@ -43,14 +45,19 @@ export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ apiB
     fetchCrops();
   }, [apiBase, token]);
 
-  const [targets, setTargets] = useState<{ nutrient: string; target_ppm: number }[]>([
-    { nutrient: 'n', target_ppm: 150 },
-    { nutrient: 'p2o5', target_ppm: 50 },
-    { nutrient: 'k2o', target_ppm: 200 },
-    { nutrient: 'cao', target_ppm: 150 },
-    { nutrient: 'mgo', target_ppm: 50 },
-    { nutrient: 'so3', target_ppm: 50 },
-  ]);
+  const [targets, setTargets] = useState<{ nutrient: string; target_ppm: number }[]>(() => {
+    if (stage && stage.recipes && stage.recipes.length > 0) {
+      return stage.recipes[0].targets.map(t => ({ nutrient: t.nutrient, target_ppm: t.target_ppm }));
+    }
+    return [
+      { nutrient: 'n', target_ppm: 150 },
+      { nutrient: 'p2o5', target_ppm: 50 },
+      { nutrient: 'k2o', target_ppm: 200 },
+      { nutrient: 'cao', target_ppm: 150 },
+      { nutrient: 'mgo', target_ppm: 50 },
+      { nutrient: 'so3', target_ppm: 50 },
+    ];
+  });
 
   const handleStageChange = (field: keyof OptimizerGrowthStage, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -97,7 +104,7 @@ export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ apiB
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h3 className="font-bold text-[#344E41]">Nouveau Stade Végétatif</h3>
+          <h3 className="font-bold text-[#344E41]">{stage ? 'Modifier le Stade Végétatif' : 'Nouveau Stade Végétatif'}</h3>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5 text-gray-500" /></button>
         </div>
         
