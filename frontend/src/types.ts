@@ -200,8 +200,11 @@ export interface OptimizerFertilizer {
   k?: number;
   k2o?: number;
   ca?: number;
+  cao?: number;
   mg?: number;
+  mgo?: number;
   s?: number;
+  so3?: number;
   fe?: number;
   mn?: number;
   zn?: number;

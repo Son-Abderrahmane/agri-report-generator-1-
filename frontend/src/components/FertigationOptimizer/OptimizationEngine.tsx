@@ -189,7 +189,7 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
 
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-2">6. Source d'eau</label>
-            <select value={selectedWaterId || ''} onChange={e => setSelectedWaterId(Number(e.target.value))} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:border-[#A3B18A] focus:outline-none bg-white">
+            <select value={selectedWaterId || ''} onChange={e => setSelectedWaterId(Number(e.target.value) || null)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:border-[#A3B18A] focus:outline-none bg-white">
               <option value="">Eau Pure (0 apports)</option>
               {waterAnalyses.map(wa => (
                 <option key={wa.id} value={wa.id}>{wa.name}</option>

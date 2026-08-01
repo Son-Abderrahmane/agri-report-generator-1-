@@ -105,9 +105,9 @@ export const FertilizersManager: React.FC<FertilizersManagerProps> = ({ apiBase,
                 <th className="p-3 text-center">N</th>
                 <th className="p-3 text-center">P2O5</th>
                 <th className="p-3 text-center">K2O</th>
-                <th className="p-3 text-center">Ca</th>
-                <th className="p-3 text-center">Mg</th>
-                <th className="p-3 text-center">S</th>
+                <th className="p-3 text-center">CaO</th>
+                <th className="p-3 text-center">MgO</th>
+                <th className="p-3 text-center">SO3</th>
                 <th className="p-3 rounded-tr-xl text-right">Actions</th>
               </tr>
             </thead>
@@ -126,9 +126,9 @@ export const FertilizersManager: React.FC<FertilizersManagerProps> = ({ apiBase,
                     <td className="p-3 text-center font-mono">{f.n || 0}%</td>
                     <td className="p-3 text-center font-mono">{f.p2o5 || 0}%</td>
                     <td className="p-3 text-center font-mono">{f.k2o || 0}%</td>
-                    <td className="p-3 text-center font-mono">{f.ca || 0}%</td>
-                    <td className="p-3 text-center font-mono">{f.mg || 0}%</td>
-                    <td className="p-3 text-center font-mono">{f.s || 0}%</td>
+                    <td className="p-3 text-center font-mono">{f.cao || 0}%</td>
+                    <td className="p-3 text-center font-mono">{f.mgo || 0}%</td>
+                    <td className="p-3 text-center font-mono">{f.so3 || 0}%</td>
                     <td className="p-3 text-right">
                       <button onClick={() => handleEdit(f)} className="p-1 text-amber-700 hover:text-amber-900 mx-1"><Edit2 className="w-4 h-4" /></button>
                       <button onClick={() => handleDelete(f.id)} className="p-1 text-red-600 hover:text-red-800"><Trash2 className="w-4 h-4" /></button>

@@ -45,11 +45,11 @@ export const GrowthStageFormModal: React.FC<GrowthStageFormModalProps> = ({ apiB
 
   const [targets, setTargets] = useState<{ nutrient: string; target_ppm: number }[]>([
     { nutrient: 'n', target_ppm: 150 },
-    { nutrient: 'p', target_ppm: 50 },
-    { nutrient: 'k', target_ppm: 200 },
-    { nutrient: 'ca', target_ppm: 150 },
-    { nutrient: 'mg', target_ppm: 50 },
-    { nutrient: 's', target_ppm: 50 },
+    { nutrient: 'p2o5', target_ppm: 50 },
+    { nutrient: 'k2o', target_ppm: 200 },
+    { nutrient: 'cao', target_ppm: 150 },
+    { nutrient: 'mgo', target_ppm: 50 },
+    { nutrient: 'so3', target_ppm: 50 },
   ]);
 
   const handleStageChange = (field: keyof OptimizerGrowthStage, value: any) => {

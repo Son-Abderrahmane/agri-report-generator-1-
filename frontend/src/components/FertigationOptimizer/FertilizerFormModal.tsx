@@ -10,7 +10,7 @@ interface FertilizerFormModalProps {
 
 export const FertilizerFormModal: React.FC<FertilizerFormModalProps> = ({ fertilizer, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<OptimizerFertilizer>>({
-    name: '', type: 'Mineral', unit: 'kg', n: 0, p2o5: 0, k2o: 0, ca: 0, mg: 0, s: 0,
+    name: '', type: 'Mineral', unit: 'kg', n: 0, p2o5: 0, k2o: 0, cao: 0, mgo: 0, so3: 0,
     fe: 0, mn: 0, zn: 0, cu: 0, b: 0, mo: 0, price_per_unit: 0
   });
 
@@ -68,9 +68,9 @@ export const FertilizerFormModal: React.FC<FertilizerFormModalProps> = ({ fertil
           <div>
             <h4 className="text-xs font-bold text-[#344E41] uppercase tracking-wider mb-3 pb-1 border-b border-gray-100">Macronutriments (%)</h4>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {['n', 'p2o5', 'k2o', 'ca', 'mg', 's'].map(n => (
+              {['n', 'p2o5', 'k2o', 'cao', 'mgo', 'so3'].map(n => (
                 <div key={n}>
-                  <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">{n === 'p2o5' ? 'P2O5' : n === 'k2o' ? 'K2O' : n}</label>
+                  <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">{n === 'p2o5' ? 'P2O5' : n === 'k2o' ? 'K2O' : n === 'cao' ? 'CaO' : n === 'mgo' ? 'MgO' : n === 'so3' ? 'SO3' : n}</label>
                   <input type="number" step="0.1" value={(formData as any)[n] || ''} onChange={e => handleChange(n as any, parseFloat(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
                 </div>
               ))}
