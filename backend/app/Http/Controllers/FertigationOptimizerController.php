@@ -244,4 +244,9 @@ class FertigationOptimizerController extends Controller
 
         return response()->json($result);
     }
+    public function getCompatibilityRules()
+    {
+        $rules = \Illuminate\Support\Facades\DB::table('fertilizer_compatibility_rules')->get();
+        return response()->json($rules);
+    }
 }

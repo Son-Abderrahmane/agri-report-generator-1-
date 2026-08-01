@@ -30,6 +30,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [includeOptimizationComparison, setIncludeOptimizationComparison] = useState(false);
 
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return;
@@ -161,7 +162,18 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          {optimizationResults?.customized_program && (
+            <label className="flex items-center cursor-pointer space-x-2 bg-[#5A6352] px-3 py-1.5 rounded-xl border border-[#A3B18A]/30">
+              <input 
+                type="checkbox" 
+                className="form-checkbox text-[#A3B18A] rounded" 
+                checked={includeOptimizationComparison} 
+                onChange={e => setIncludeOptimizationComparison(e.target.checked)} 
+              />
+              <span className="text-[11px] font-bold text-[#E9EDC9]">Inclure l'historique d'optimisation</span>
+            </label>
+          )}
           {onEditRequest && (
             <button
               onClick={onEditRequest}
@@ -399,64 +411,128 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
           </section>
         )}
 
-        {/* 6. Fertigation Program Table (Optimized) */}
+        {/* 6. Fertigation Program Table */}
         {optimizationResults && (
           <section className="mb-6 section page-break-inside-avoid">
-            <div data-pdf-block="true" className="flex items-center justify-between mb-2 pb-1 border-b-2 border-[#344E41]">
-              <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider">
-                Programme Hebdomadaire de Fertigation Optimisé
-              </h3>
-            </div>
+            {optimizationResults.customized_program ? (
+              <>
+                <div data-pdf-block="true" className="flex items-center justify-between mb-2 pb-1 border-b-2 border-[#344E41]">
+                  <h3 className="font-serif italic font-bold text-xs text-[#344E41] uppercase tracking-wider">
+                    Programme Hebdomadaire de Fertigation (Final Personnalisé)
+                  </h3>
+                </div>
 
-            <div data-pdf-block="true" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              <div>
-                <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Doses Requises (kg)</h5>
-                <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1]">
-                  <thead>
-                    <tr className="bg-[#5A6352] text-[#E9EDC9]">
-                      <th className="p-1.5 border border-[#5A6352]">Engrais</th>
-                      <th className="p-1.5 border border-[#5A6352] text-right">Quantité</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#EBE9E1]">
-                    {optimizationResults.doses?.map((d: any, i: number) => (
-                      <tr key={i} className="even:bg-[#F9F8F5]">
-                        <td className="p-1.5 border border-[#EBE9E1] font-bold text-[#344E41]">{d.name || d.fertilizer?.name || 'Inconnu'}</td>
-                        <td className="p-1.5 border border-[#EBE9E1] text-right font-mono font-bold text-[#344E41]">{Number(d.total_amount || d.amount || d.amount_kg || 0).toFixed(2)} kg</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div>
-                <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Préparation des Bacs Concentrés (A/B)</h5>
-                <div className="space-y-2">
-                  <div className="bg-red-50 p-2 rounded-xl border border-red-100">
-                    <h6 className="text-[10px] font-bold text-red-800 mb-1">BAC A (Calcium / Nitrates)</h6>
-                    <ul className="text-[10px] text-red-700 space-y-0.5 pl-2">
-                      {optimizationResults.tanks?.['Tank A']?.map((t: any, i: number) => (
-                        <li key={i}>• <span className="font-mono font-bold">{Number(t.amount || t.amount_kg || 0).toFixed(2)} kg</span> - {t.name || t.fertilizer?.name || 'Inconnu'}</li>
-                      ))}
-                    </ul>
+                <div data-pdf-block="true" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Doses Retenues</h5>
+                    <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1]">
+                      <thead>
+                        <tr className="bg-[#344E41] text-[#E9EDC9]">
+                          <th className="p-1.5 border border-[#344E41]">Engrais</th>
+                          <th className="p-1.5 border border-[#344E41] text-right">Quantité</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#EBE9E1]">
+                        {optimizationResults.customized_program.doses?.map((d: any, i: number) => (
+                          <tr key={i} className="even:bg-[#F9F8F5]">
+                            <td className="p-1.5 border border-[#EBE9E1] font-bold text-[#344E41]">
+                              {d.name || d.fertilizer?.name || 'Inconnu'}
+                              {d.modification_reason && (
+                                <span className="block text-[8px] font-normal text-gray-500 italic">Raison: {d.modification_reason}</span>
+                              )}
+                            </td>
+                            <td className="p-1.5 border border-[#EBE9E1] text-right font-mono font-bold text-[#344E41]">{Number(d.total_amount || d.amount || 0).toFixed(2)} {d.unit || 'kg'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="bg-blue-50 p-2 rounded-xl border border-blue-100">
-                    <h6 className="text-[10px] font-bold text-blue-800 mb-1">BAC B (Phosphates / Sulfates)</h6>
-                    <ul className="text-[10px] text-blue-700 space-y-0.5 pl-2">
-                      {optimizationResults.tanks?.['Tank B']?.map((t: any, i: number) => (
-                        <li key={i}>• <span className="font-mono font-bold">{Number(t.amount || t.amount_kg || 0).toFixed(2)} kg</span> - {t.name || t.fertilizer?.name || 'Inconnu'}</li>
-                      ))}
-                    </ul>
+
+                  <div>
+                    <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Bacs Concentrés (A/B/C)</h5>
+                    <div className="space-y-2">
+                      {['Tank A', 'Tank B', 'Tank C'].map(tankName => {
+                        const tank = optimizationResults.customized_program.tanks?.[tankName];
+                        if (!tank || tank.length === 0) return null;
+                        
+                        const colors: any = { 'Tank A': 'red', 'Tank B': 'blue', 'Tank C': 'purple' };
+                        const c = colors[tankName];
+                        return (
+                          <div key={tankName} className={`bg-${c}-50 p-2 rounded-xl border border-${c}-100`}>
+                            <h6 className={`text-[10px] font-bold text-${c}-800 mb-1`}>{tankName}</h6>
+                            <ul className={`text-[10px] text-${c}-700 space-y-0.5 pl-2`}>
+                              {tank.map((t: any, i: number) => (
+                                <li key={i}>• <span className="font-mono font-bold">{Number(t.amount || 0).toFixed(2)} {t.unit || 'kg'}</span> - {t.name || t.fertilizer?.name || 'Inconnu'}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </>
+            ) : null}
 
-            <div data-pdf-block="true">
-              <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Couverture Nutritionnelle (PPM)</h5>
+            {(!optimizationResults.customized_program || includeOptimizationComparison) && (
+              <>
+                <div data-pdf-block="true" className="flex items-center justify-between mb-2 pb-1 border-b-2 border-gray-400 mt-6">
+                  <h3 className="font-serif italic font-bold text-xs text-gray-600 uppercase tracking-wider">
+                    {optimizationResults.customized_program ? 'Historique : Programme Initial Optimisé (Système)' : 'Programme Hebdomadaire de Fertigation Optimisé'}
+                  </h3>
+                </div>
+
+                <div data-pdf-block="true" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 opacity-80">
+                  <div>
+                    <h5 className="font-bold text-gray-600 mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Doses Calculées</h5>
+                    <table className="w-full text-left text-xs border-collapse border border-[#EBE9E1]">
+                      <thead>
+                        <tr className="bg-gray-500 text-white">
+                          <th className="p-1.5 border border-gray-500">Engrais</th>
+                          <th className="p-1.5 border border-gray-500 text-right">Quantité</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#EBE9E1]">
+                        {optimizationResults.doses?.map((d: any, i: number) => (
+                          <tr key={i} className="even:bg-[#F9F8F5]">
+                            <td className="p-1.5 border border-[#EBE9E1] font-bold text-gray-600">{d.name || d.fertilizer?.name || 'Inconnu'}</td>
+                            <td className="p-1.5 border border-[#EBE9E1] text-right font-mono font-bold text-gray-600">{Number(d.total_amount || d.amount || d.amount_kg || 0).toFixed(2)} kg</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div>
+                    <h5 className="font-bold text-gray-600 mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Bacs Concentrés (A/B)</h5>
+                    <div className="space-y-2">
+                      <div className="bg-red-50 p-2 rounded-xl border border-red-100">
+                        <h6 className="text-[10px] font-bold text-red-800 mb-1">BAC A (Calcium / Nitrates)</h6>
+                        <ul className="text-[10px] text-red-700 space-y-0.5 pl-2">
+                          {optimizationResults.tanks?.['Tank A']?.map((t: any, i: number) => (
+                            <li key={i}>• <span className="font-mono font-bold">{Number(t.amount || t.amount_kg || 0).toFixed(2)} kg</span> - {t.name || t.fertilizer?.name || 'Inconnu'}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="bg-blue-50 p-2 rounded-xl border border-blue-100">
+                        <h6 className="text-[10px] font-bold text-blue-800 mb-1">BAC B (Phosphates / Sulfates)</h6>
+                        <ul className="text-[10px] text-blue-700 space-y-0.5 pl-2">
+                          {optimizationResults.tanks?.['Tank B']?.map((t: any, i: number) => (
+                            <li key={i}>• <span className="font-mono font-bold">{Number(t.amount || t.amount_kg || 0).toFixed(2)} kg</span> - {t.name || t.fertilizer?.name || 'Inconnu'}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div data-pdf-block="true" className="mt-4">
+              <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Couverture Nutritionnelle Finale (UF)</h5>
               <div className="grid grid-cols-6 gap-2">
                 {['n', 'p2o5', 'k2o', 'cao', 'mgo', 'so3', 'fe'].map(n => {
-                  const achieved = (optimizationResults.achieved ? optimizationResults.achieved[n] : (optimizationResults.achieved_ppm ? optimizationResults.achieved_ppm[n] : 0)) || 0;
+                  const achieved = optimizationResults.customized_program ? (optimizationResults.customized_program.achieved?.[n] || 0) : ((optimizationResults.achieved ? optimizationResults.achieved[n] : (optimizationResults.achieved_ppm ? optimizationResults.achieved_ppm[n] : 0)) || 0);
                   const target = (optimizationResults.net_targets ? optimizationResults.net_targets[n] : (optimizationResults.targets ? optimizationResults.targets[n] : 0)) || 0;
                   if (target === 0 && achieved === 0) return null;
                   
@@ -465,7 +541,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
                     <div key={n} className="bg-gray-50 p-1.5 rounded-lg border border-gray-100 text-center flex flex-col justify-center items-center">
                       <span className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">{n}</span>
                       <span className="block font-mono text-[11px] font-bold text-[#344E41]">
-                        {Number(achieved).toFixed(0)} <span className="text-[9px] font-normal text-gray-400">/ {Number(target).toFixed(0)} UF</span>
+                        {Number(achieved).toFixed(1)} <span className="text-[9px] font-normal text-gray-400">/ {Number(target).toFixed(1)} UF</span>
                       </span>
                       <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1.5 overflow-hidden flex">
                         <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${percent}%`}}></div>

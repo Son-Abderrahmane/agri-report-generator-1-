@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
 import { OptimizerFertilizer, OptimizerGrowthStage, OptimizerWaterAnalysis, OptimizerSoilAnalysis } from '../../types';
 import { Play, Settings, Droplets, FlaskConical, Beaker, CheckCircle, ListTree, Activity } from 'lucide-react';
+import { ManualFertigationBuilder } from './ManualFertigationBuilder';
 
 interface OptimizationEngineProps {
   apiBase: string;
@@ -15,6 +16,7 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
   const [stages, setStages] = useState<OptimizerGrowthStage[]>([]);
   const [waterAnalyses, setWaterAnalyses] = useState<OptimizerWaterAnalysis[]>([]);
   const [soilAnalyses, setSoilAnalyses] = useState<OptimizerSoilAnalysis[]>([]);
+  const [compatibilityRules, setCompatibilityRules] = useState<any[]>([]);
   
   const [selectedFertilizers, setSelectedFertilizers] = useState<number[]>([]);
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
@@ -45,11 +47,12 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
   const fetchData = async () => {
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const [fRes, sRes, wRes, saRes] = await Promise.all([
+      const [fRes, sRes, wRes, saRes, cRes] = await Promise.all([
         fetch(`${apiBase}/optimizer/fertilizers`, { headers }),
         fetch(`${apiBase}/optimizer/growth-stages`, { headers }),
         fetch(`${apiBase}/optimizer/water-analyses`, { headers }),
-        fetch(`${apiBase}/optimizer/soil-analyses`, { headers })
+        fetch(`${apiBase}/optimizer/soil-analyses`, { headers }),
+        fetch(`${apiBase}/optimizer/compatibility-rules`, { headers })
       ]);
       if (fRes.ok) {
         const ferts = await fRes.json();
@@ -67,6 +70,10 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
       if (saRes.ok) {
         const sa = await saRes.json();
         setSoilAnalyses(sa);
+      }
+      if (cRes.ok) {
+        const rules = await cRes.json();
+        setCompatibilityRules(rules);
       }
     } catch (e) {
       console.error(e);
@@ -114,6 +121,17 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
       console.error(e);
     }
     setIsLoading(false);
+  };
+
+  const handleSaveCustomProgram = (customProgram: any) => {
+    const updated = {
+      ...localResults,
+      customized_program: customProgram
+    };
+    setLocalResults(updated);
+    if (onSaveResults) {
+      onSaveResults(updated);
+    }
   };
 
   const toggleFertilizer = (id: number) => {
@@ -354,6 +372,15 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
               </div>
             </div>
           )}
+
+          <ManualFertigationBuilder 
+            originalResults={localResults}
+            fertilizers={fertilizers}
+            compatibilityRules={compatibilityRules}
+            onSaveCustomProgram={handleSaveCustomProgram}
+            areaHa={areaHa}
+            durationDays={durationDays}
+          />
         </div>
       )}
     </div>
