@@ -52,4 +52,29 @@ class SoilAvailabilityService
 
         return $available;
     }
+
+    /**
+     * Calculate available nutrients in UF/ha.
+     * Assumes typical topsoil weight of ~2,000,000 kg/ha.
+     * 1 mg/kg in 2,000,000 kg soil = 2 kg/ha = 2 UF/ha.
+     */
+    public function calculateAvailableNutrientsUF(array $soilAnalysis): array
+    {
+        if (empty($soilAnalysis)) {
+            return [];
+        }
+
+        $availableUF = [];
+        $customCoefficients = $soilAnalysis['availability_coefficients'] ?? [];
+
+        foreach ($this->defaultCoefficients as $nutrient => $defaultCoef) {
+            $rawAmount = $soilAnalysis[$nutrient] ?? 0; // typically mg/kg
+            $coef = $customCoefficients[$nutrient] ?? $defaultCoef;
+            
+            // Soil bulk density conversion: 1 mg/kg * 2 = 2 kg/ha
+            $availableUF[$nutrient] = ($rawAmount * 2) * $coef;
+        }
+
+        return $availableUF;
+    }
 }

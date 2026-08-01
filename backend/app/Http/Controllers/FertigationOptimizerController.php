@@ -168,7 +168,12 @@ class FertigationOptimizerController extends Controller
             'soil_analysis_id' => 'nullable|exists:soil_analyses,id',
             'fertilizer_ids' => 'required|array',
             'fertilizer_ids.*' => 'exists:fertilizers,id',
-            'irrigation_volume_liters' => 'required|numeric',
+            'area_ha' => 'required|numeric',
+            'duration_days' => 'required|integer',
+            'irrigation_volume_liters_day' => 'required|numeric',
+            'nitrogen_balancer_id' => 'nullable|exists:fertilizers,id',
+            'selection_strategy' => 'nullable|string',
+            'strategy' => 'nullable|string',
             'objective' => 'nullable|string',
         ]);
 
@@ -190,14 +195,25 @@ class FertigationOptimizerController extends Controller
             $saModel = SoilAnalysis::find($validated['soil_analysis_id']);
             if ($saModel) {
                 $soilAnalysisData = $saModel->toArray();
-                $availableSoilNutrients = $this->soilAvailabilityService->calculateAvailableNutrients($soilAnalysisData);
+                
+                $strategy = $validated['strategy'] ?? 'sequential_uf';
+                if ($strategy === 'sequential_uf') {
+                    $availableSoilNutrients = $this->soilAvailabilityService->calculateAvailableNutrientsUF($soilAnalysisData);
+                } else {
+                    $availableSoilNutrients = $this->soilAvailabilityService->calculateAvailableNutrients($soilAnalysisData);
+                }
             }
         }
 
         $fertilizers = Fertilizer::whereIn('id', $validated['fertilizer_ids'])->get()->toArray();
 
         $params = [
-            'irrigation_volume_liters' => $validated['irrigation_volume_liters'],
+            'area_ha' => $validated['area_ha'],
+            'duration_days' => $validated['duration_days'],
+            'irrigation_volume_liters_day' => $validated['irrigation_volume_liters_day'],
+            'nitrogen_balancer_id' => $validated['nitrogen_balancer_id'] ?? null,
+            'selection_strategy' => $validated['selection_strategy'] ?? 'highest_concentration',
+            'strategy' => $validated['strategy'] ?? 'sequential_uf',
             'objective' => $validated['objective'] ?? 'target_accuracy',
         ];
 

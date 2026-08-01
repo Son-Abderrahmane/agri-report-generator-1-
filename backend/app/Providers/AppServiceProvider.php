@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             \App\Services\Fertigation\OptimizationServiceInterface::class,
-            \App\Services\Fertigation\HeuristicOptimizationSolver::class
+            \App\Services\Fertigation\SequentialUFSolver::class
         );
     }
 
