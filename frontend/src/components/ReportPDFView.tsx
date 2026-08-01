@@ -421,8 +421,8 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
                   <tbody className="divide-y divide-[#EBE9E1]">
                     {optimizationResults.doses?.map((d: any, i: number) => (
                       <tr key={i} className="even:bg-[#F9F8F5]">
-                        <td className="p-1.5 border border-[#EBE9E1] font-bold text-[#344E41]">{d.name}</td>
-                        <td className="p-1.5 border border-[#EBE9E1] text-right font-mono font-bold text-[#344E41]">{d.amount_kg.toFixed(2)} kg</td>
+                        <td className="p-1.5 border border-[#EBE9E1] font-bold text-[#344E41]">{d.name || d.fertilizer?.name || 'Inconnu'}</td>
+                        <td className="p-1.5 border border-[#EBE9E1] text-right font-mono font-bold text-[#344E41]">{Number(d.total_amount || d.amount || d.amount_kg || 0).toFixed(2)} kg</td>
                       </tr>
                     ))}
                   </tbody>
@@ -436,7 +436,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
                     <h6 className="text-[10px] font-bold text-red-800 mb-1">BAC A (Calcium / Nitrates)</h6>
                     <ul className="text-[10px] text-red-700 space-y-0.5 pl-2">
                       {optimizationResults.tanks?.['Tank A']?.map((t: any, i: number) => (
-                        <li key={i}>• <span className="font-mono font-bold">{t.amount_kg.toFixed(2)} kg</span> - {t.name}</li>
+                        <li key={i}>• <span className="font-mono font-bold">{Number(t.amount || t.amount_kg || 0).toFixed(2)} kg</span> - {t.name || t.fertilizer?.name || 'Inconnu'}</li>
                       ))}
                     </ul>
                   </div>
@@ -444,7 +444,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
                     <h6 className="text-[10px] font-bold text-blue-800 mb-1">BAC B (Phosphates / Sulfates)</h6>
                     <ul className="text-[10px] text-blue-700 space-y-0.5 pl-2">
                       {optimizationResults.tanks?.['Tank B']?.map((t: any, i: number) => (
-                        <li key={i}>• <span className="font-mono font-bold">{t.amount_kg.toFixed(2)} kg</span> - {t.name}</li>
+                        <li key={i}>• <span className="font-mono font-bold">{Number(t.amount || t.amount_kg || 0).toFixed(2)} kg</span> - {t.name || t.fertilizer?.name || 'Inconnu'}</li>
                       ))}
                     </ul>
                   </div>
@@ -455,29 +455,27 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
             <div data-pdf-block="true">
               <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Couverture Nutritionnelle (PPM)</h5>
               <div className="grid grid-cols-6 gap-2">
-                {['n', 'p', 'k', 'ca', 'mg', 's'].map(n => {
-                  const achieved = optimizationResults.achieved?.[n] || 0;
-                  const target = optimizationResults.net_targets?.[n] || 1;
+                {['n', 'p2o5', 'k2o', 'cao', 'mgo', 'so3', 'fe'].map(n => {
+                  const achieved = (optimizationResults.achieved ? optimizationResults.achieved[n] : (optimizationResults.achieved_ppm ? optimizationResults.achieved_ppm[n] : 0)) || 0;
+                  const target = (optimizationResults.net_targets ? optimizationResults.net_targets[n] : (optimizationResults.targets ? optimizationResults.targets[n] : 0)) || 0;
+                  if (target === 0 && achieved === 0) return null;
+                  
                   const percent = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 100;
                   return (
-                    <div key={n} className="bg-gray-50 p-1.5 rounded-lg border border-gray-100 text-center">
+                    <div key={n} className="bg-gray-50 p-1.5 rounded-lg border border-gray-100 text-center flex flex-col justify-center items-center">
                       <span className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">{n}</span>
                       <span className="block font-mono text-[11px] font-bold text-[#344E41]">
-                        {achieved.toFixed(0)} <span className="text-[9px] font-normal text-gray-400">/ {optimizationResults.net_targets?.[n]?.toFixed(0) || 0}</span>
+                        {Number(achieved).toFixed(0)} <span className="text-[9px] font-normal text-gray-400">/ {Number(target).toFixed(0)} UF</span>
                       </span>
                       <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1.5 overflow-hidden flex">
-                        <div className="h-full bg-blue-400 opacity-50" style={{width: `${target > 0 ? ((optimizationResults.inputs_json?.water?.[n] || 0) / target) * 100 : 0}%`}}></div>
-                        <div className="h-full bg-amber-600 opacity-50" style={{width: `${target > 0 ? ((optimizationResults.inputs_json?.available_soil_nutrients?.[n] || 0) / target) * 100 : 0}%`}}></div>
-                        <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${target > 0 ? ((achieved - (optimizationResults.inputs_json?.water?.[n] || 0) - (optimizationResults.inputs_json?.available_soil_nutrients?.[n] || 0)) / target) * 100 : 0}%`}}></div>
+                        <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${percent}%`}}></div>
                       </div>
                     </div>
                   )
                 })}
               </div>
               <div className="mt-2 text-right text-[9px] text-gray-500 flex justify-end items-center space-x-3">
-                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-blue-400 opacity-50 inline-block"></span><span>Eau</span></span>
-                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-amber-600 opacity-50 inline-block"></span><span>Sol</span></span>
-                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span>Engrais</span></span>
+                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span>Couverture</span></span>
               </div>
             </div>
           </section>
