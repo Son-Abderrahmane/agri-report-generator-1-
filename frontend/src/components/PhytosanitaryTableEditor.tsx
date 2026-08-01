@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PhytosanitaryTable, PhytosanitaryRow, Pesticide } from '../types';
 import { Shield, Plus, Trash2, Edit2, AlertCircle } from 'lucide-react';
+import { CustomSelect } from './CustomSelect';
 
 interface PhytosanitaryTableEditorProps {
   table: PhytosanitaryTable;
@@ -169,14 +170,14 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
         </div>
 
         <div className="flex items-center space-x-2">
-          <select
-            value={selectedCrop}
-            onChange={(e) => setSelectedCrop(e.target.value)}
-            className="text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all"
-          >
-            <option value="">Filtre Culture (Toutes)</option>
-            {uniqueCrops.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <div className="w-48">
+            <CustomSelect
+              value={selectedCrop}
+              onChange={setSelectedCrop}
+              options={uniqueCrops}
+              placeholder="Filtre Culture (Toutes)"
+            />
+          </div>
 
           <button
             onClick={handleAddRow}
@@ -215,16 +216,12 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
                 <tr key={row.id} className="hover:bg-[#F9F8F5] transition-colors">
                   {/* Target */}
                   <td className="p-2">
-                    <select
+                    <CustomSelect
                       value={row.target}
-                      onChange={(e) => handleUpdateRow(row.id, 'target', e.target.value)}
-                      className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all"
-                    >
-                      <option value="">Sélectionner Cible...</option>
-                      {uniqueTargets.map(t => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => handleUpdateRow(row.id, 'target', val)}
+                      options={uniqueTargets}
+                      placeholder="Sélectionner Cible..."
+                    />
                     {/* Fallback input if target not in list */}
                     {!uniqueTargets.includes(row.target) && row.target && (
                        <input 
@@ -238,34 +235,27 @@ export const PhytosanitaryTableEditor: React.FC<PhytosanitaryTableEditorProps> =
 
                                 {/* Active Ingredient */}
                   <td className="p-2">
-                    <select
+                    <CustomSelect
                       value={row.activeIngredient}
-                      onChange={(e) => handleUpdateRow(row.id, 'activeIngredient', e.target.value)}
-                      className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      onChange={(val) => handleUpdateRow(row.id, 'activeIngredient', val)}
+                      options={getActiveIngredientsForTarget(row.target)}
+                      placeholder="Matière Active..."
                       disabled={!row.target}
-                    >
-                      <option value="">Matière Active...</option>
-                      {getActiveIngredientsForTarget(row.target).map(a => (
-                        <option key={a} value={a}>{a}</option>
-                      ))}
-                    </select>
+                    />
                   </td>
 
                   {/* Product */}
                   <td className="p-2">
-                    <select
+                    <CustomSelect
                       value={row.product}
-                      onChange={(e) => handleUpdateRow(row.id, 'product', e.target.value)}
-                      className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-lg px-3 py-2 cursor-pointer shadow-sm hover:border-[#A3B18A] hover:bg-[#F0F2E9] focus:bg-white focus:border-[#A3B18A] focus:ring-2 focus:ring-[#E9EDC9] focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      onChange={(val) => handleUpdateRow(row.id, 'product', val)}
+                      options={getProductsForTargetAndActive(row.target, row.activeIngredient).map(p => ({
+                        value: p.product_name,
+                        label: p.product_name
+                      }))}
+                      placeholder="Sélectionner Produit..."
                       disabled={!row.activeIngredient}
-                    >
-                      <option value="">Sélectionner Produit...</option>
-                      {getProductsForTargetAndActive(row.target, row.activeIngredient)
-                        .map(p => (
-                           <option key={p.id} value={p.product_name}>{p.product_name}</option>
-                        ))
-                      }
-                    </select>
+                    />
                   </td>
 
                   {/* Dose */}
