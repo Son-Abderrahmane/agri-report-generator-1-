@@ -308,8 +308,8 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
                 return (
                   <div key={n} className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center flex flex-col justify-center items-center">
                     <span className="block text-xs font-bold text-gray-500 uppercase mb-1">{n}</span>
-                    <span className="block font-mono text-lg font-bold text-[#344E41]">{achieved.toFixed(1)}</span>
-                    <span className="text-[10px] font-bold text-gray-400">/ {target.toFixed(1)} UF</span>
+                    <span className="block font-mono text-lg font-bold text-[#344E41]">{Number(achieved).toFixed(1)}</span>
+                    <span className="text-[10px] font-bold text-gray-400">/ {Number(target).toFixed(1)} UF</span>
                     <div className="w-full bg-gray-200 h-1.5 rounded-full mt-2 overflow-hidden flex">
                       <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${percent}%`}}></div>
                     </div>
