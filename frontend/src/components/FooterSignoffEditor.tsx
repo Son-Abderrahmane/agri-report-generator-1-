@@ -64,7 +64,6 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
             type="text"
             value={footer.consultantName || ''}
             onChange={(e) => handleChange('consultantName', e.target.value)}
-            placeholder="ex: Ing. Agronome Karim BENALLAL"
             className="w-full text-xs font-bold text-[#344E41] bg-[#F9F8F5] border border-[#EBE9E1] rounded-xl px-3 py-2.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
           />
         </div>
@@ -78,7 +77,6 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
             type="text"
             value={footer.consultantTitle || ''}
             onChange={(e) => handleChange('consultantTitle', e.target.value)}
-            placeholder="ex: Consultant Spécialiste en Cultures Sous Serre"
             className="w-full text-xs text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-xl px-3 py-2.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
           />
         </div>
@@ -92,7 +90,6 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
             type="text"
             value={footer.phone || ''}
             onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="ex: +212 6 61 23 45 67"
             className="w-full text-xs font-mono text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-xl px-3 py-2.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
           />
         </div>
@@ -106,7 +103,6 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
             type="email"
             value={footer.email || ''}
             onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="ex: k.benallal@agri-expertise.ma"
             className="w-full text-xs font-mono text-[#3D3D3D] bg-[#F9F8F5] border border-[#EBE9E1] rounded-xl px-3 py-2.5 focus:bg-white focus:border-[#A3B18A] focus:outline-none"
           />
         </div>
