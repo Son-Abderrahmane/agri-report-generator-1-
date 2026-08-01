@@ -528,32 +528,7 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
               </>
             )}
 
-            <div data-pdf-block="true" className="mt-4">
-              <h5 className="font-bold text-[#344E41] mb-2 text-[11px] uppercase border-b border-[#EBE9E1] pb-1">Couverture Nutritionnelle Finale (UF)</h5>
-              <div className="grid grid-cols-6 gap-2">
-                {['n', 'p2o5', 'k2o', 'cao', 'mgo', 'so3', 'fe'].map(n => {
-                  const achieved = optimizationResults.customized_program ? (optimizationResults.customized_program.achieved?.[n] || 0) : ((optimizationResults.achieved ? optimizationResults.achieved[n] : (optimizationResults.achieved_ppm ? optimizationResults.achieved_ppm[n] : 0)) || 0);
-                  const target = (optimizationResults.net_targets ? optimizationResults.net_targets[n] : (optimizationResults.targets ? optimizationResults.targets[n] : 0)) || 0;
-                  if (target === 0 && achieved === 0) return null;
-                  
-                  const percent = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 100;
-                  return (
-                    <div key={n} className="bg-gray-50 p-1.5 rounded-lg border border-gray-100 text-center flex flex-col justify-center items-center">
-                      <span className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">{n}</span>
-                      <span className="block font-mono text-[11px] font-bold text-[#344E41]">
-                        {Number(achieved).toFixed(1)} <span className="text-[9px] font-normal text-gray-400">/ {Number(target).toFixed(1)} UF</span>
-                      </span>
-                      <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1.5 overflow-hidden flex">
-                        <div className={`h-full ${percent >= 95 ? 'bg-green-500' : percent >= 80 ? 'bg-amber-400' : 'bg-red-400'}`} style={{width: `${percent}%`}}></div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-              <div className="mt-2 text-right text-[9px] text-gray-500 flex justify-end items-center space-x-3">
-                <span className="flex items-center space-x-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span>Couverture</span></span>
-              </div>
-            </div>
+
           </section>
         )}
 
@@ -610,36 +585,64 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
           <div className="flex items-end justify-between">
             <div>
               <p className="font-serif italic font-bold text-xs text-[#344E41]">
-                {footer?.consultantName || 'Ing. Agronome Karim BENALLAL'}
+                {footer?.consultantName}
               </p>
               <p className="text-[11px] text-[#5A6352]">
-                {footer?.consultantTitle || 'Consultant Spécialiste en Agronomie'}
+                {footer?.consultantTitle}
               </p>
-              <p className="text-[10px] text-[#8C8F85] font-mono mt-1">
-                Tél: {footer?.phone || '-'} | Email: {footer?.email || '-'}
-              </p>
+              {(footer?.phone || footer?.email) && (
+                <p className="text-[10px] text-[#8C8F85] font-mono mt-1">
+                  {footer?.phone && `Tél: ${footer.phone}`} {footer?.phone && footer?.email && '|'} {footer?.email && `Email: ${footer.email}`}
+                </p>
+              )}
             </div>
 
-            <div className="text-right flex flex-col items-end">
-              <span className="text-[10px] font-bold text-[#8C8F85] uppercase mb-1">
-                Visa & Signature de l'Expert
-              </span>
-              {footer?.signatureDataUrl ? (
-                <img
-                  src={footer.signatureDataUrl}
-                  alt="Signature"
-                  className="h-12 max-w-[140px] object-contain border border-[#EBE9E1] p-1 rounded-xl bg-white"
-                />
-              ) : (
-                <div className="w-36 h-12 border border-dashed border-[#CCD5AE] rounded-xl flex items-center justify-center text-[10px] text-[#8C8F85] italic">
-                  Cachet & Signature
-                </div>
-              )}
-              {footer?.dateSigned && (
-                <span className="text-[10px] font-mono text-[#8C8F85] mt-1">
-                  Signé le : {footer.dateSigned}
+            <div className="flex space-x-6">
+              {/* Farm Signature */}
+              <div className="text-center flex flex-col items-center">
+                <span className="text-[10px] font-bold text-[#8C8F85] uppercase mb-1">
+                  Acusé de réception de la ferme
                 </span>
-              )}
+                {footer?.farmSignatureDataUrl ? (
+                  <img
+                    src={footer.farmSignatureDataUrl}
+                    alt="Signature Ferme"
+                    className="h-12 max-w-[140px] object-contain border border-[#EBE9E1] p-1 rounded-xl bg-white"
+                  />
+                ) : (
+                  <div className="w-36 h-12 border border-dashed border-[#CCD5AE] rounded-xl flex items-center justify-center text-[10px] text-[#8C8F85] italic">
+                    Signature de la ferme
+                  </div>
+                )}
+                {footer?.farmDateSigned && (
+                  <span className="text-[10px] font-mono text-[#8C8F85] mt-1">
+                    Le : {footer.farmDateSigned}
+                  </span>
+                )}
+              </div>
+
+              {/* Consultant Signature */}
+              <div className="text-center flex flex-col items-center">
+                <span className="text-[10px] font-bold text-[#8C8F85] uppercase mb-1">
+                  Visa & Signature de l'Expert
+                </span>
+                {footer?.signatureDataUrl ? (
+                  <img
+                    src={footer.signatureDataUrl}
+                    alt="Signature Expert"
+                    className="h-12 max-w-[140px] object-contain border border-[#EBE9E1] p-1 rounded-xl bg-white"
+                  />
+                ) : (
+                  <div className="w-36 h-12 border border-dashed border-[#CCD5AE] rounded-xl flex items-center justify-center text-[10px] text-[#8C8F85] italic">
+                    Cachet & Signature
+                  </div>
+                )}
+                {footer?.dateSigned && (
+                  <span className="text-[10px] font-mono text-[#8C8F85] mt-1">
+                    Signé le : {footer.dateSigned}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </footer>
