@@ -57,11 +57,11 @@ export const FertilizerFormModal: React.FC<FertilizerFormModalProps> = ({ fertil
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">Unité (ex: kg, L)</label>
-              <input type="text" value={formData.unit || 'kg'} onChange={e => handleChange('unit', e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
+              <input type="text" value={formData.unit ?? ''} onChange={e => handleChange('unit', e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">Prix Unitaire (DH)</label>
-              <input type="number" step="0.01" value={formData.price_per_unit || ''} onChange={e => handleChange('price_per_unit', parseFloat(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
+              <input type="number" step="0.01" value={formData.price_per_unit ?? ''} onChange={e => handleChange('price_per_unit', e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
             </div>
           </div>
 
@@ -71,7 +71,7 @@ export const FertilizerFormModal: React.FC<FertilizerFormModalProps> = ({ fertil
               {['n', 'p2o5', 'k2o', 'cao', 'mgo', 'so3'].map(n => (
                 <div key={n}>
                   <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">{n === 'p2o5' ? 'P2O5' : n === 'k2o' ? 'K2O' : n === 'cao' ? 'CaO' : n === 'mgo' ? 'MgO' : n === 'so3' ? 'SO3' : n}</label>
-                  <input type="number" step="0.1" value={(formData as any)[n] || ''} onChange={e => handleChange(n as any, parseFloat(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
+                  <input type="number" step="0.1" value={(formData as any)[n] ?? ''} onChange={e => handleChange(n as any, e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
                 </div>
               ))}
             </div>
@@ -83,7 +83,7 @@ export const FertilizerFormModal: React.FC<FertilizerFormModalProps> = ({ fertil
               {['fe', 'mn', 'zn', 'cu', 'b', 'mo'].map(n => (
                 <div key={n}>
                   <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">{n}</label>
-                  <input type="number" step="0.01" value={(formData as any)[n] || ''} onChange={e => handleChange(n as any, parseFloat(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
+                  <input type="number" step="0.01" value={(formData as any)[n] ?? ''} onChange={e => handleChange(n as any, e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A3B18A]" />
                 </div>
               ))}
             </div>

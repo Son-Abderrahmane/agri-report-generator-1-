@@ -79,7 +79,7 @@ export const WaterAnalysisFormModal: React.FC<WaterAnalysisFormModalProps> = ({ 
                 {['ec', 'ph', 'hardness', 'alkalinity'].map(n => (
                   <div key={n} className="bg-gray-50 p-3 rounded-xl border border-blue-50 shadow-sm">
                     <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">{n}</label>
-                    <input type="number" step="0.01" value={(formData as any)[n] || ''} onChange={e => handleChange(n as any, parseFloat(e.target.value) || 0)} className="w-full font-mono text-sm border-b border-gray-200 focus:outline-none focus:border-blue-500 bg-transparent" />
+                    <input type="number" step="0.01" value={(formData as any)[n] ?? ''} onChange={e => handleChange(n as any, e.target.value)} className="w-full font-mono text-sm border-b border-gray-200 focus:outline-none focus:border-blue-500 bg-transparent" />
                   </div>
                 ))}
               </div>
@@ -91,7 +91,7 @@ export const WaterAnalysisFormModal: React.FC<WaterAnalysisFormModalProps> = ({ 
                 {['ca', 'mg', 'na', 'cl', 's', 'hco3', 'n', 'p', 'k', 'fe'].map(n => (
                   <div key={n}>
                     <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">{n}</label>
-                    <input type="number" step="0.1" value={(formData as any)[n] || ''} onChange={e => handleChange(n as any, parseFloat(e.target.value) || 0)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-400" />
+                    <input type="number" step="0.1" value={(formData as any)[n] ?? ''} onChange={e => handleChange(n as any, e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-400" />
                   </div>
                 ))}
               </div>
