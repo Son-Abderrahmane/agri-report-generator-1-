@@ -16,18 +16,45 @@ class StockTankGenerator
 
         foreach ($fertilizerDoses as $dose) {
             $fertId = $dose['id'];
+            
+            // Get the full fertilizer info to determine its category
+            $fertInfo = collect($allFertilizers)->firstWhere('id', $fertId);
+            $name = strtolower($fertInfo['name'] ?? $dose['name']);
+
+            // Agronomic Rule Check based on Name/Composition
+            $isCalcium = str_contains($name, 'calcium');
+            $isPhosphate = str_contains($name, 'phosphat') || str_contains($name, 'map') || str_contains($name, 'mkp') || str_contains($name, 'dap');
+            $isSulfate = str_contains($name, 'sulfat');
+
             $placed = false;
 
-            foreach (['Tank A', 'Tank B', 'Tank C'] as $tankName) {
-                if ($this->isCompatibleWithTank($fertId, $tanks[$tankName], $rules)) {
-                    $tanks[$tankName][] = $dose;
+            // Preferred Tank assignment
+            // Tank A: Calcium & Azote (Nitrate de Calcium, Nitrate de Potassium, Urée)
+            // Tank B: Phosphates & Sulfates (MAP, Sulfate de Magnésium, Sulfate de Potassium)
+            $preferredTank = 'Tank A'; // Default
+            
+            if ($isPhosphate || $isSulfate) {
+                $preferredTank = 'Tank B';
+            }
+            if ($isCalcium) {
+                $preferredTank = 'Tank A';
+            }
+
+            // Try to place in the preferred tank first
+            if ($this->isCompatibleWithTank($fertId, $tanks[$preferredTank], $rules, $allFertilizers)) {
+                $tanks[$preferredTank][] = $dose;
+                $placed = true;
+            } else {
+                // If not compatible with preferred tank, try the other main tank
+                $otherTank = ($preferredTank === 'Tank A') ? 'Tank B' : 'Tank A';
+                if ($this->isCompatibleWithTank($fertId, $tanks[$otherTank], $rules, $allFertilizers)) {
+                    $tanks[$otherTank][] = $dose;
                     $placed = true;
-                    break;
                 }
             }
 
             if (!$placed) {
-                // If it can't go in A, B, or C, we just create a new tank dynamically or put it in C with a warning.
+                // If it can't go in A or B, we just create a new tank dynamically or put it in C
                 $tanks['Tank C'][] = $dose;
             }
         }
@@ -36,8 +63,11 @@ class StockTankGenerator
         return array_filter($tanks, fn($tank) => !empty($tank));
     }
 
-    protected function isCompatibleWithTank($newFertId, array $tankItems, $rules): bool
+    protected function isCompatibleWithTank($newFertId, array $tankItems, $rules, array $allFertilizers): bool
     {
+        $newFert = collect($allFertilizers)->firstWhere('id', $newFertId);
+        $newName = strtolower($newFert['name'] ?? '');
+
         foreach ($tankItems as $item) {
             $existingFertId = $item['id'];
             
@@ -52,19 +82,19 @@ class StockTankGenerator
             if ($incompatible) {
                 return false;
             }
-        }
+            
+            // Hardcoded agronomic fallbacks
+            $existingFert = collect($allFertilizers)->firstWhere('id', $existingFertId);
+            $existingName = strtolower($existingFert['name'] ?? $item['name']);
+            
+            // Calcium + Sulfate/Phosphate precipitate
+            $newIsCalcium = str_contains($newName, 'calcium');
+            $existingIsCalcium = str_contains($existingName, 'calcium');
+            
+            $newIsSulfateOrPhos = str_contains($newName, 'sulfat') || str_contains($newName, 'phosphat') || str_contains($newName, 'map') || str_contains($newName, 'mkp');
+            $existingIsSulfateOrPhos = str_contains($existingName, 'sulfat') || str_contains($existingName, 'phosphat') || str_contains($existingName, 'map') || str_contains($existingName, 'mkp');
 
-        // Hardcoded fallbacks if no DB rules exist yet for MVP
-        $newFert = collect($tankItems)->firstWhere('id', $newFertId) ?? ['name' => ''];
-        $newName = strtolower($newFert['name'] ?? '');
-        
-        foreach ($tankItems as $item) {
-            $existingName = strtolower($item['name']);
-            // Calcium + Sulfate/Phosphate fallback
-            if (
-                (str_contains($newName, 'calcium') && (str_contains($existingName, 'sulfat') || str_contains($existingName, 'phosphat'))) ||
-                (str_contains($existingName, 'calcium') && (str_contains($newName, 'sulfat') || str_contains($newName, 'phosphat')))
-            ) {
+            if (($newIsCalcium && $existingIsSulfateOrPhos) || ($existingIsCalcium && $newIsSulfateOrPhos)) {
                 return false;
             }
         }
