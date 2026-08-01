@@ -101,8 +101,8 @@ export const WaterAnalysisManager: React.FC<WaterAnalysisManagerProps> = ({ apiB
                 </div>
                 
                 <div className="flex items-center space-x-3 mb-3">
-                  <div className={`px-2 py-0.5 rounded text-xs font-bold ${a.status === 'Active' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
-                    {a.status}
+                  <div className="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">
+                    Source Principale
                   </div>
                   <h5 className="font-bold text-[#344E41]">{a.name}</h5>
                 </div>

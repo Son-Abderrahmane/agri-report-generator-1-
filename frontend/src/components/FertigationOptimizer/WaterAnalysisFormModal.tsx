@@ -11,7 +11,6 @@ interface WaterAnalysisFormModalProps {
 export const WaterAnalysisFormModal: React.FC<WaterAnalysisFormModalProps> = ({ analysis, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<OptimizerWaterAnalysis>>({
     name: 'Nouvelle Analyse d\'eau',
-    status: 'Active',
     ec: 0,
     ph: 7.0,
     hardness: 0,
@@ -71,17 +70,6 @@ export const WaterAnalysisFormModal: React.FC<WaterAnalysisFormModalProps> = ({ 
                   className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:border-blue-400 focus:outline-none" 
                   required
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Statut</label>
-                <select 
-                  value={formData.status || 'Active'} 
-                  onChange={e => handleChange('status', e.target.value)} 
-                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:border-blue-400 focus:outline-none"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Archived">Archivée</option>
-                </select>
               </div>
             </div>
 
