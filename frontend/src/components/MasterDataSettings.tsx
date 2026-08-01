@@ -488,7 +488,12 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                 <div className="bg-[#F9F8F5] p-4 rounded-xl border border-[#CCD5AE] mb-6 space-y-3">
                   <select value={editingFormula.category || 'diagnostic'} onChange={e => setEditingFormula({...editingFormula, category: e.target.value})} className="border p-2 rounded text-sm w-full">
                     <option value="diagnostic">Bilan Diagnostic</option>
-                    <option value="recommendation">Recommandation</option>
+                    <option value="recommendation">Recommandation (Générale)</option>
+                    <optgroup label="Recommandations par Catégorie">
+                      {categories.map(c => (
+                        <option key={c.id} value={`rec:${c.name}`}>{c.name}</option>
+                      ))}
+                    </optgroup>
                   </select>
                   <textarea rows={3} placeholder="Contenu de la formule..." value={editingFormula.content || ''} onChange={e => setEditingFormula({...editingFormula, content: e.target.value})} className="border p-2 rounded text-sm w-full" />
                   <div className="flex justify-end space-x-2">
@@ -502,7 +507,9 @@ export const MasterDataSettings: React.FC<MasterDataSettingsProps> = ({ apiBase,
                 {formulas.map(f => (
                   <div key={f.id} className="border rounded-xl p-4 bg-white shadow-sm flex flex-col justify-between">
                     <div>
-                      <span className="text-[10px] font-bold uppercase bg-gray-200 px-2 py-0.5 rounded">{f.category}</span>
+                      <span className="text-[10px] font-bold uppercase bg-gray-200 px-2 py-0.5 rounded text-[#344E41]">
+                        {f.category?.startsWith('rec:') ? `REC: ${f.category.split('rec:')[1]}` : f.category}
+                      </span>
                       <p className="text-sm mt-2 font-medium text-[#3D3D3D]">{f.content}</p>
                     </div>
                     <div className="flex justify-end mt-3 space-x-2">

@@ -36,7 +36,7 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
         if (catRes.ok) setCategories(await catRes.json());
         if (formRes.ok) {
           const allFormulas: QuickFormula[] = await formRes.json();
-          setFormulas(allFormulas.filter(f => f.category === 'recommendation'));
+          setFormulas(allFormulas.filter(f => f.category === 'recommendation' || f.category?.startsWith('rec:')));
         }
       } catch (e) {
         console.error('Failed to load recommendation master data', e);
@@ -129,7 +129,7 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
               <div className="flex-1">
                 <input
                   type="text"
-                  list="formulas-list"
+                  list={`formulas-list-${item.id}`}
                   value={item.text}
                   onChange={(e) => handleUpdateItem(item.id, 'text', e.target.value)}
                   onFocus={() => {
@@ -148,6 +148,13 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
                   placeholder="ex: Aérer les serres dès 08h00..."
                   className="w-full text-xs sm:text-sm font-medium text-[#3D3D3D] bg-white border border-[#EBE9E1] rounded-xl px-3 py-1.5 focus:border-[#A3B18A] focus:outline-none"
                 />
+                <datalist id={`formulas-list-${item.id}`}>
+                  {formulas
+                    .filter(f => f.category === `rec:${item.category}` || f.category === 'recommendation')
+                    .map(f => (
+                      <option key={f.id} value={f.content} />
+                  ))}
+                </datalist>
               </div>
 
               <button
@@ -162,11 +169,7 @@ export const RecommendationsEditor: React.FC<RecommendationsEditorProps> = ({
         )}
       </div>
 
-      <datalist id="formulas-list">
-        {formulas.map(f => (
-          <option key={f.id} value={f.content} />
-        ))}
-      </datalist>
+
     </div>
   );
 };
