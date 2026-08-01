@@ -13,6 +13,7 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
   onChange,
 }) => {
   const [isSigModalOpen, setIsSigModalOpen] = useState(false);
+  const [isFarmSigModalOpen, setIsFarmSigModalOpen] = useState(false);
 
   const handleChange = (field: keyof FooterSignoff, value: string) => {
     onChange({
@@ -25,6 +26,13 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
     onChange({
       ...footer,
       signatureDataUrl: undefined,
+    });
+  };
+
+  const handleClearFarmSignature = () => {
+    onChange({
+      ...footer,
+      farmSignatureDataUrl: undefined,
     });
   };
 
@@ -105,9 +113,10 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
       </div>
 
       {/* Signature Section */}
-      <div className="bg-[#F9F8F5] p-4 rounded-2xl border border-[#EBE9E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Signature Section - Consultant */}
+      <div className="bg-[#F9F8F5] p-4 rounded-2xl border border-[#EBE9E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <div>
-          <h4 className="font-bold text-xs text-[#344E41] mb-1">Signature Numérique & Tampon</h4>
+          <h4 className="font-bold text-xs text-[#344E41] mb-1">Signature Numérique & Tampon (Consultant)</h4>
           <p className="text-[11px] text-[#8C8F85]">
             {footer.signatureDataUrl
               ? 'Signature enregistrée sur ce rapport.'
@@ -145,6 +154,47 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
         </div>
       </div>
 
+      {/* Signature Section - Farm */}
+      <div className="bg-[#F9F8F5] p-4 rounded-2xl border border-[#EBE9E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h4 className="font-bold text-xs text-[#344E41] mb-1">Acusé de réception de la ferme</h4>
+          <p className="text-[11px] text-[#8C8F85]">
+            {footer.farmSignatureDataUrl
+              ? 'Signature enregistrée sur ce rapport.'
+              : 'Cliquez ci-contre pour apposer la signature du représentant de la ferme.'}
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {footer.farmSignatureDataUrl ? (
+            <div className="flex items-center space-x-2 bg-white p-2 rounded-xl border border-[#CCD5AE] shadow-sm">
+              <img
+                src={footer.farmSignatureDataUrl}
+                alt="Signature Ferme"
+                className="h-10 max-w-[120px] object-contain"
+              />
+              <button
+                type="button"
+                onClick={handleClearFarmSignature}
+                className="text-amber-800/60 hover:text-red-700 p-1.5 rounded-lg hover:bg-amber-100"
+                title="Supprimer la signature"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsFarmSigModalOpen(true)}
+              className="flex items-center space-x-1.5 bg-[#5A6352] hover:bg-[#344E41] text-[#E9EDC9] font-bold text-xs px-4 py-2.5 rounded-xl shadow transition-all"
+            >
+              <PenTool className="w-4 h-4" />
+              <span>Signer (Ferme)</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       <SignaturePadModal
         isOpen={isSigModalOpen}
         onClose={() => setIsSigModalOpen(false)}
@@ -153,6 +203,18 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
             ...footer,
             signatureDataUrl: dataUrl,
             dateSigned: new Date().toISOString().split('T')[0],
+          });
+        }}
+      />
+
+      <SignaturePadModal
+        isOpen={isFarmSigModalOpen}
+        onClose={() => setIsFarmSigModalOpen(false)}
+        onSaveSignature={(dataUrl) => {
+          onChange({
+            ...footer,
+            farmSignatureDataUrl: dataUrl,
+            farmDateSigned: new Date().toISOString().split('T')[0],
           });
         }}
       />
