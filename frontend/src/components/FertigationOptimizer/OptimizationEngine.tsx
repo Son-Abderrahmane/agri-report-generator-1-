@@ -255,25 +255,25 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
                     </tr>
                   </thead>
                   <tbody>
-                    {localResults.doses.map((d: any, i: number) => (
+                    {(localResults.doses || []).map((d: any, i: number) => (
                       <tr key={i} className="border-b border-gray-50">
-                        <td className="py-3 font-medium text-gray-800">{d.name}</td>
-                        <td className="py-3 text-right font-mono font-bold text-[#344E41]">{d.total_amount.toFixed(1)} {d.unit}</td>
-                        <td className="py-3 text-right font-mono text-gray-600">{d.per_ha_week.toFixed(1)} {d.unit}</td>
-                        <td className="py-3 text-right font-mono text-gray-600">{d.per_ha_day.toFixed(2)} {d.unit}</td>
+                        <td className="py-3 font-medium text-gray-800">{d.name || d.fertilizer?.name || 'Inconnu'}</td>
+                        <td className="py-3 text-right font-mono font-bold text-[#344E41]">{Number(d.total_amount || d.amount || 0).toFixed(1)} {d.unit || 'kg'}</td>
+                        <td className="py-3 text-right font-mono text-gray-600">{Number(d.per_ha_week || 0).toFixed(1)} {d.unit || 'kg'}</td>
+                        <td className="py-3 text-right font-mono text-gray-600">{Number(d.per_ha_day || 0).toFixed(2)} {d.unit || 'kg'}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className="mt-4 text-right text-sm font-bold text-gray-600 bg-gray-50 p-3 rounded-xl">Coût total estimé: {localResults.total_cost.toFixed(2)} DH</div>
+              <div className="mt-4 text-right text-sm font-bold text-gray-600 bg-gray-50 p-3 rounded-xl">Coût total estimé: {Number(localResults.total_cost || 0).toFixed(2)} DH</div>
             </div>
 
             <div>
               <h5 className="font-bold text-[#344E41] mb-3 flex items-center space-x-2"><Beaker className="w-4 h-4"/> <span>Distribution des Bacs (Dynamique)</span></h5>
               <div className="space-y-3">
                 {['Tank A', 'Tank B', 'Tank C'].map(tankName => {
-                  const tank = localResults.tanks[tankName];
+                  const tank = localResults.tanks ? localResults.tanks[tankName] : null;
                   if (!tank || tank.length === 0) return null;
                   
                   const colors: any = {
@@ -286,7 +286,7 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
                     <div key={tankName} className={`${colors[tankName]} p-3 rounded-xl border`}>
                       <h6 className="text-xs font-bold mb-2">{tankName}</h6>
                       <ul className="text-xs space-y-1">
-                        {tank.map((t: any, i: number) => <li key={i}>• {t.amount.toFixed(2)} {t.unit} - {t.name}</li>)}
+                        {tank.map((t: any, i: number) => <li key={i}>• {Number(t.amount || 0).toFixed(2)} {t.unit || 'kg'} - {t.name || t.fertilizer?.name || 'Inconnu'}</li>)}
                       </ul>
                     </div>
                   )
@@ -299,8 +299,8 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
             <h5 className="font-bold text-[#344E41] mb-3">Couverture Nutritionnelle (UF)</h5>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-4">
               {['n', 'p2o5', 'k2o', 'cao', 'mgo', 'so3', 'fe'].map(n => {
-                const achieved = localResults.achieved[n] || 0;
-                const target = localResults.net_targets[n] || 0;
+                const achieved = (localResults.achieved ? localResults.achieved[n] : (localResults.achieved_ppm ? localResults.achieved_ppm[n] : 0)) || 0;
+                const target = (localResults.net_targets ? localResults.net_targets[n] : (localResults.targets ? localResults.targets[n] : 0)) || 0;
                 if (target === 0 && achieved === 0) return null;
                 
                 const percent = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 100;
@@ -335,13 +335,13 @@ export const OptimizationEngine: React.FC<OptimizationEngineProps> = ({ apiBase,
                       <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-3">
                         <span className="text-sm font-bold text-[#344E41]">{trace.fertilizer}</span>
                         <span className="text-gray-300">|</span>
-                        <span className="font-mono text-sm font-bold text-gray-600">{trace.dose_kg.toFixed(2)} kg</span>
+                        <span className="font-mono text-sm font-bold text-gray-600">{Number(trace.dose_kg || 0).toFixed(2)} kg</span>
                       </div>
                       
                       <div className="text-xs">
                         <span className="text-gray-500 font-bold block mb-1">Apports Générés:</span>
                         <div className="flex flex-wrap gap-2">
-                          {Object.entries(trace.contributions).map(([nutrient, amount]: any) => (
+                          {Object.entries(trace.contributions || {}).map(([nutrient, amount]: any) => (
                             <span key={nutrient} className="bg-green-50 text-green-700 px-2 py-1 rounded font-mono border border-green-100">
                               +{amount} UF {nutrient.toUpperCase()}
                             </span>
