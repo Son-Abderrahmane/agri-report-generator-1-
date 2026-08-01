@@ -24,16 +24,16 @@ class WaterAnalysisProcessor
     {
         $netTargets = [];
         foreach ($targets as $nutrient => $targetUF) {
-            $waterMgL = $waterAnalysis[strtolower($nutrient)] ?? 0;
+            $waterMgL = (float)($waterAnalysis[strtolower($nutrient)] ?? 0);
             
             // Soil nutrients typically come in mg/kg. The SoilAvailabilityService 
             // should have already converted them to a UF equivalent before passing them here,
             // or we do it here if it's returning kg/ha. Let's assume $availableSoilNutrients is already in UF/ha.
-            $soilUF = $availableSoilNutrients[strtolower($nutrient)] ?? 0;
+            $soilUF = (float)($availableSoilNutrients[strtolower($nutrient)] ?? 0);
 
             $waterUF = ($waterMgL * $totalLiters) / 1000000 / $areaHa;
 
-            $netTargets[$nutrient] = max(0, $targetUF - $waterUF - $soilUF);
+            $netTargets[$nutrient] = max(0, (float)$targetUF - $waterUF - $soilUF);
         }
         return $netTargets;
     }
