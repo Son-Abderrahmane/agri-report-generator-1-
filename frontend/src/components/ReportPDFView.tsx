@@ -603,6 +603,11 @@ export const ReportPDFView: React.FC<ReportPDFViewProps> = ({
                 <span className="text-[10px] font-bold text-[#8C8F85] uppercase mb-1">
                   Acusé de réception de la ferme
                 </span>
+                {footer?.farmSignerName && (
+                  <span className="text-[11px] font-bold text-[#344E41] mb-1">
+                    {footer.farmSignerName}
+                  </span>
+                )}
                 {footer?.farmSignatureDataUrl ? (
                   <img
                     src={footer.farmSignatureDataUrl}

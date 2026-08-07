@@ -71,7 +71,7 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
         {/* Title */}
         <div>
           <label className="block text-xs font-bold text-[#5A6352] mb-1">
-            Titre / Fonction
+            Nom du cabinet / Fonction
           </label>
           <input
             type="text"
@@ -151,43 +151,58 @@ export const FooterSignoffEditor: React.FC<FooterSignoffEditorProps> = ({
       </div>
 
       {/* Signature Section - Farm */}
-      <div className="bg-[#F9F8F5] p-4 rounded-2xl border border-[#EBE9E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h4 className="font-bold text-xs text-[#344E41] mb-1">Acusé de réception de la ferme</h4>
-          <p className="text-[11px] text-[#8C8F85]">
-            {footer.farmSignatureDataUrl
-              ? 'Signature enregistrée sur ce rapport.'
-              : 'Cliquez ci-contre pour apposer la signature du représentant de la ferme.'}
-          </p>
-        </div>
+      <div className="bg-[#F9F8F5] p-4 rounded-2xl border border-[#EBE9E1] flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h4 className="font-bold text-xs text-[#344E41] mb-1">Acusé de réception de la ferme</h4>
+            <p className="text-[11px] text-[#8C8F85]">
+              {footer.farmSignatureDataUrl
+                ? 'Signature enregistrée sur ce rapport.'
+                : 'Cliquez ci-contre pour apposer la signature du représentant de la ferme.'}
+            </p>
+          </div>
 
-        <div className="flex items-center space-x-2">
-          {footer.farmSignatureDataUrl ? (
-            <div className="flex items-center space-x-2 bg-white p-2 rounded-xl border border-[#CCD5AE] shadow-sm">
-              <img
-                src={footer.farmSignatureDataUrl}
-                alt="Signature Ferme"
-                className="h-10 max-w-[120px] object-contain"
-              />
+          <div className="flex items-center space-x-2">
+            {footer.farmSignatureDataUrl ? (
+              <div className="flex items-center space-x-2 bg-white p-2 rounded-xl border border-[#CCD5AE] shadow-sm">
+                <img
+                  src={footer.farmSignatureDataUrl}
+                  alt="Signature Ferme"
+                  className="h-10 max-w-[120px] object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={handleClearFarmSignature}
+                  className="text-amber-800/60 hover:text-red-700 p-1.5 rounded-lg hover:bg-amber-100"
+                  title="Supprimer la signature"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={handleClearFarmSignature}
-                className="text-amber-800/60 hover:text-red-700 p-1.5 rounded-lg hover:bg-amber-100"
-                title="Supprimer la signature"
+                onClick={() => setIsFarmSigModalOpen(true)}
+                className="flex items-center space-x-1.5 bg-[#5A6352] hover:bg-[#344E41] text-[#E9EDC9] font-bold text-xs px-4 py-2.5 rounded-xl shadow transition-all"
               >
-                <Trash2 className="w-4 h-4" />
+                <PenTool className="w-4 h-4" />
+                <span>Signer (Ferme)</span>
               </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsFarmSigModalOpen(true)}
-              className="flex items-center space-x-1.5 bg-[#5A6352] hover:bg-[#344E41] text-[#E9EDC9] font-bold text-xs px-4 py-2.5 rounded-xl shadow transition-all"
-            >
-              <PenTool className="w-4 h-4" />
-              <span>Signer (Ferme)</span>
-            </button>
-          )}
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-[#5A6352] mb-1">
+            Nom du signataire (Ferme)
+          </label>
+          <input
+            type="text"
+            value={footer.farmSignerName || ''}
+            onChange={(e) => handleChange('farmSignerName', e.target.value)}
+            className="w-full text-xs font-bold text-[#344E41] bg-white border border-[#EBE9E1] rounded-xl px-3 py-2.5 focus:border-[#A3B18A] focus:outline-none"
+            placeholder="Ex: M. le Gérant"
+          />
         </div>
       </div>
 

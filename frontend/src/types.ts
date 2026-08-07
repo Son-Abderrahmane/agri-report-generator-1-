@@ -102,6 +102,7 @@ export interface FooterSignoff {
   dateSigned?: string;
   farmSignatureDataUrl?: string;
   farmDateSigned?: string;
+  farmSignerName?: string;
   notes?: string;
 }
 

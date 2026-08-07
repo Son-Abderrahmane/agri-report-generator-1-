@@ -77,10 +77,11 @@ export const createNewReport = (templateId?: string): Report => {
         { id: 'rec_t2', text: 'Purger les rampes de goutte-à-goutte à l\'acide citrique en fin de semaine.' }
       ],
       footer: {
-        consultantName: 'Loubna',
-        consultantTitle: '',
-        phone: '',
-        email: '',
+        consultantName: 'Loubna Rachadi',
+        consultantTitle: 'Rachadi Nobilis Consulting',
+        phone: '0669801918',
+        email: 'rachadinobilisconsulting@gmail.com',
+        farmSignerName: '',
       }
     };
   }
@@ -163,10 +164,11 @@ export const createNewReport = (templateId?: string): Report => {
       { id: 'rec_3', text: 'Maintenir la fréquence de récolte à 2 jours d\'intervalle pour éviter la sur-maturité.' }
     ],
     footer: {
-      consultantName: 'Loubna',
-      consultantTitle: '',
-      phone: '',
-      email: '',
+      consultantName: 'Loubna Rachadi',
+      consultantTitle: 'Rachadi Nobilis Consulting',
+      phone: '0669801918',
+      email: 'rachadinobilisconsulting@gmail.com',
+      farmSignerName: '',
     }
   };
 };
